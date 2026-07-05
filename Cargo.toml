@@ -1,0 +1,5 @@
+resolver = "2"
+[workspace]
+members = [
+    "topik-core",
+]
