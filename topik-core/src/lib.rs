@@ -14,6 +14,7 @@ mod encoding;
 mod error;
 pub mod protocol;
 mod segments;
+mod subscribe;
 mod topic;
 pub mod transport;
 
@@ -27,11 +28,13 @@ pub use segments::{
     BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, StandardBool, TrueFalse, YesNo,
     YesNoBool,
 };
+pub use subscribe::SubscribeBuilder;
 pub use topic::Topic;
 
 #[doc(hidden)]
 pub mod __private {
     pub use crate::segments::Segment;
+    pub use crate::subscribe::SubscribeBuilder;
     pub use crate::topic::TopicWire;
     pub use crate::topic::private::Sealed;
     pub use crate::transport::{MessageStream, RawMessage, Transport};
