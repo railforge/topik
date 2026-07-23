@@ -133,6 +133,10 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 [#(#wildcard_segments,)*]
                     .join(&sep.to_string())
             }
+
+            fn payload(&self) -> &Self::Payload {
+                &self.#payload_name
+            }
         }
     }
 }

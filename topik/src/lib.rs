@@ -7,17 +7,45 @@
 //! ```rust
 //! use topik::Topic;
 //! use topik::encoding::RawEncoding;
+//! use topik::protocol::Mqtt;
 //! use bytes::Bytes;
 //!
 //! #[derive(Topic)]
-//! #[topic(segments("factory", "v2", device_id), encoding = RawEncoding)]
-//! pub struct SensorReading {
+//! #[topic(segments("sensors", device_id), encoding = RawEncoding)]
+//! pub struct TemperatureReading {
 //!     pub device_id: u64,
 //!     #[payload]
 //!     pub data: Bytes,
 //! }
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let client = TopikClient::connect(
+//!         Mqtt::builder()
+//!             .url("mqtt://localhost:1883")
+//!             .client_id("my-service")
+//!             .build()
+//!     ).await?;
+//!
+//!     client.publish(TemperatureReading {
+//!         device_id: 42,
+//!         data: Bytes::from("23.5"),
+//!     }).await?;
+//!
+//!     let mut sub = client.subscribe::<TemperatureReading>().await?;
+//!     while let Some(msg) = sub.next().await {
+//!         println!("device {} sent {:?}", msg.device_id, msg.data);
+//!     }
+//!
+//!     Ok(())
+//! }
 //! ```
 
+mod client;
+mod subscriber;
+
+pub use client::TopikClient;
+pub use subscriber::Subscriber;
 pub use topik_core::{Topic, TopikError};
 pub use topik_macros::Topic;
 
@@ -34,6 +62,12 @@ pub mod segment {
         YesNo, YesNoBool,
     };
 }
+
+pub mod protocol {
+    pub use topik_core::protocol::{Mqtt, Nats, Protocol, Redis};
+}
+
+pub mod transport;
 
 #[doc(hidden)]
 pub mod __private {
