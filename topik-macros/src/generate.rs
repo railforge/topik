@@ -78,6 +78,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
         /// Contains only topic path segments.
         /// Used internally by backends for deferred payload deserialization.
         #[doc(hidden)]
+        #[derive(Debug, Clone)]
         pub struct #key_name {
             #(#key_fields,)*
         }
