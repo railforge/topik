@@ -14,4 +14,4 @@ bytes = "1"
 syn = { version = "3", features = ["full"] }
 quote = "1"
 proc-macro2 = "1"
-topik-core = { path = "../topik-core" }
+topik-core = { version = "0.1.0", path = "../topik-core" }
