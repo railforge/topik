@@ -1,7 +1,7 @@
 use crate::encoding::Encoding;
 use crate::error::TopikError;
 
-mod private {
+pub mod private {
     pub trait Sealed {}
 }
 
