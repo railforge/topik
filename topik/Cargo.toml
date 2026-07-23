@@ -1,0 +1,15 @@
+[package]
+name = "topik"
+version = "0.1.0"
+edition = "2024"
+description = "Typed pub/sub topics for Rust"
+license = "MIT"
+repository = "https://github.com/railforge/topik"
+
+[dependencies]
+topik-core = { path = "../topik-core" }
+topik-macros = { path = "../topik-macros" }
+bytes = "1"
+
+[features]
+default = []

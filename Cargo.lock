@@ -140,6 +140,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "topik"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "topik-core",
+ "topik-macros",
+]
+
+[[package]]
 name = "topik-core"
 version = "0.1.0"
 dependencies = [
