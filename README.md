@@ -1,5 +1,10 @@
 # topik
 
+[![CI](https://github.com/railforge/topik/workflows/CI/badge.svg)](https://github.com/railforge/topik/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org)
+
+
 Typed pub/sub topics for Rust.
 
 Pub/sub systems like MQTT, NATS, and Redis treat topics as raw strings.
