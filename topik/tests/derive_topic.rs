@@ -1,4 +1,5 @@
 use bytes::Bytes;
+
 use topik::Topic;
 use topik::encoding::RawEncoding;
 use topik_core::__private::TopicWire;

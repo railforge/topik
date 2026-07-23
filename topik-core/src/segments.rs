@@ -206,6 +206,18 @@ impl<R: BoolRepr> From<bool> for BoolSegment<R> {
     }
 }
 
+impl<R: BoolRepr> std::fmt::Debug for BoolSegment<R> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("BoolSegment").field(&self.0).finish()
+    }
+}
+
+impl<R: BoolRepr> Clone for BoolSegment<R> {
+    fn clone(&self) -> Self {
+        BoolSegment(self.0, std::marker::PhantomData)
+    }
+}
+
 impl<R: BoolRepr> Segment for BoolSegment<R> {
     fn render(&self) -> Cow<'_, str> {
         if self.0 {
