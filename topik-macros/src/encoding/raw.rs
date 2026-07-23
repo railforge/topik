@@ -49,6 +49,6 @@ impl Encoding<String> for StringEncoding {
     }
 
     fn decode(bytes: Bytes) -> Result<String, TopikError> {
-        String::from_utf8(bytes.into()).map_err(|e| TopikError::EncodingError(e.to_string()))
+        String::from_utf8(bytes.into()).map_err(|e| TopikError::Encoding(Box::new(e)))
     }
 }
