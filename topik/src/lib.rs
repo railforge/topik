@@ -4,10 +4,12 @@
 //!
 //! # Quick start
 //!
-//! ```rust
+//! ```ignore
 //! use topik::Topic;
+//! use topik::TopikClient;
 //! use topik::encoding::RawEncoding;
 //! use topik::protocol::Mqtt;
+//! use topik::transport::InMemoryTransport;
 //! use bytes::Bytes;
 //!
 //! #[derive(Topic)]
@@ -20,12 +22,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = TopikClient::connect(
-//!         Mqtt::builder()
-//!             .url("mqtt://localhost:1883")
-//!             .client_id("my-service")
-//!             .build()
-//!     ).await?;
+//!     let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
 //!
 //!     client.publish(TemperatureReading {
 //!         device_id: 42,

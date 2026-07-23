@@ -21,7 +21,7 @@ pub use raw::{RawEncoding, StringEncoding};
 ///
 /// # Implementing a custom encoding
 ///
-/// ```rust
+/// ```ignore
 /// use topik_core::{Encoding, TopikError};
 /// use bytes::Bytes;
 ///

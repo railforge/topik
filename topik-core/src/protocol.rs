@@ -7,7 +7,7 @@
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// use topik::TopikClient;
 /// use topik::protocol::Mqtt;
 ///

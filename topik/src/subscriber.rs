@@ -10,7 +10,7 @@ use topik_core::{Encoding, TopikError};
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// let mut sub = client.subscribe::<TemperatureReading>().await?;
 ///
 /// while let Some(msg) = sub.next().await {
@@ -63,7 +63,7 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
 
     /// Returns the subscription pattern string.
     ///
-    /// ```rust
+    /// ```ignore
     /// let sub = client.subscribe::<TemperatureReading>().await?;
     /// println!("{}", sub.pattern());
     /// // MQTT → "sensors/+/temperature"

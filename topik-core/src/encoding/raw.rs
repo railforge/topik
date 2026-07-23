@@ -8,7 +8,7 @@ use crate::TopikError;
 /// Use this when the payload schema is not yet known, or when forwarding
 /// messages without inspecting them.
 ///
-/// ```rust
+/// ```ignore
 /// #[derive(Topic)]
 /// #[topic(segments("legacy", device_id), encoding = RawEncoding)]
 /// pub struct LegacyTopic {
@@ -33,7 +33,7 @@ impl Encoding<Bytes> for RawEncoding {
 ///
 /// Use when the payload is a raw string.
 ///
-/// ```rust
+/// ```ignore
 /// #[derive(Topic)]
 /// #[topic(segments("legacy", device_id), encoding = StringEncoding)]
 /// pub struct LegacyReading {

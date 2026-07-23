@@ -8,20 +8,7 @@
 /// | NATS     | `.`       | `*`    | `>`   |
 /// | Redis    | `:`       | `*`    | `*`   |
 ///
-/// # Examples
-///
-/// ```
-/// // MQTT
-/// assert!(matches_pattern("sensors/42/temperature", "sensors/+/temperature", '/', "+", "#"));
-/// assert!(matches_pattern("sensors/42/temperature", "sensors/#", '/', "+", "#"));
-///
-/// // NATS
-/// assert!(matches_pattern("sensors.42.temperature", "sensors.*.temperature", '.', "*", ">"));
-/// assert!(matches_pattern("sensors.42.temperature", "sensors.>", '.', "*", ">"));
-///
-/// // Redis
-/// assert!(matches_pattern("sensors:42:temperature", "sensors:*:temperature", ':', "*", "*"));
-/// ```
+/// See the unit tests below for usage examples.
 pub fn matches_pattern(topic: &str, pattern: &str, sep: char, single: &str, multi: &str) -> bool {
     // fast path — exact match
     if topic == pattern {

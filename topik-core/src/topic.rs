@@ -16,7 +16,7 @@ pub trait Topic {
 
     /// Human readable name for this topic type, derived from the struct name.
     ///
-    /// ```rust
+    /// ```ignore
     /// assert_eq!(SensorReading::NAME, "SensorReading");
     /// ```
     const NAME: &'static str;

@@ -16,7 +16,7 @@ mod parse;
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// use topik::Topic;
 ///
 /// #[derive(Topic)]

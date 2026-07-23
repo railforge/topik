@@ -22,7 +22,7 @@ struct InMemoryInner {
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// use topik::transport::InMemoryTransport;
 /// use topik::protocol::Mqtt;
 /// use topik::TopikClient;

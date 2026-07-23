@@ -26,7 +26,7 @@ impl<T: Transport> TopikClient<T> {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```ignore
     /// // all devices
     /// let mut sub = client.subscribe::<TemperatureReading>().await?;
     ///

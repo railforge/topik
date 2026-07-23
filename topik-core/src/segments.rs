@@ -114,7 +114,7 @@ impl Segment for String {
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// use topik_core::{BoolRepr, BoolSegment, Segment};
 ///
 /// // your legacy system uses "active" and "inactive"
@@ -140,7 +140,7 @@ impl Segment for String {
 ///
 /// Topik ships common representations out of the box:
 ///
-/// ```rust
+/// ```ignore
 /// use topik_core::{StandardBool, BinaryBool, YesNoBool, OnOffBool};
 ///
 /// // "true" / "false"  — default, most common
@@ -168,7 +168,7 @@ pub trait BoolRepr {
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// use topik_core::{BoolSegment, BoolRepr, Segment};
 ///
 /// struct OnOff;

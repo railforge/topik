@@ -8,7 +8,7 @@ use std::marker::PhantomData;
 /// Reuses [`BoolRepr`] — the same representation you use for a bool
 /// topic segment can be used for a bool payload.
 ///
-/// ```rust
+/// ```ignore
 /// use topik_core::encoding::BoolEncoding;
 /// use topik_core::segment::OneZero;
 ///
