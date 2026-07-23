@@ -1,5 +1,5 @@
-resolver = "2"
 [workspace]
 members = [
     "topik-core", "topik-macros", "topik",
 ]
+resolver = "3"
