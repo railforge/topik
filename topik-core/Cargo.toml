@@ -3,7 +3,8 @@ name = "topik-core"
 version = "0.1.0"
 edition = "2024"
 description = "Core traits for topik: typed pub/sub topics for Rust"
-license = "MIT OR Apache-2.0"
+license = "MIT"
+repository = "https://github.com/railforge/topik"
 
 [dependencies]
 bytes = "1"
