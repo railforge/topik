@@ -51,8 +51,8 @@ pub use topik_macros::Topic;
 
 pub mod encoding {
     pub use topik_core::{
-        BoolEncoding, Encoding, I32Encoding, I64Encoding, RawEncoding, StringEncoding, U8Encoding,
-        U16Encoding, U32Encoding, U64Encoding,
+        BoolEncoding, Encoding, F32Encoding, F64Encoding, I32Encoding, I64Encoding, RawEncoding,
+        StringEncoding, U8Encoding, U16Encoding, U32Encoding, U64Encoding,
     };
 }
 

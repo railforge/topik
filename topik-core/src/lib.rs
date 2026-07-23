@@ -18,8 +18,8 @@ mod topic;
 pub mod transport;
 
 pub use encoding::{
-    BoolEncoding, Encoding, I32Encoding, I64Encoding, RawEncoding, StringEncoding, U8Encoding,
-    U16Encoding, U32Encoding, U64Encoding,
+    BoolEncoding, Encoding, F32Encoding, F64Encoding, I32Encoding, I64Encoding, RawEncoding,
+    StringEncoding, U8Encoding, U16Encoding, U32Encoding, U64Encoding,
 };
 pub use error::TopikError;
 pub use protocol::{Mqtt, Nats, Protocol, Redis};

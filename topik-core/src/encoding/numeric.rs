@@ -29,3 +29,5 @@ impl_numeric_encoding!(U32Encoding, u32, "Raw `u32` payload encoding.");
 impl_numeric_encoding!(U64Encoding, u64, "Raw `u64` payload encoding.");
 impl_numeric_encoding!(I32Encoding, i32, "Raw `i32` payload encoding.");
 impl_numeric_encoding!(I64Encoding, i64, "Raw `i64` payload encoding.");
+impl_numeric_encoding!(F32Encoding, f32, "Raw `f32` payload encoding.");
+impl_numeric_encoding!(F64Encoding, f64, "Raw `f64` payload encoding.");

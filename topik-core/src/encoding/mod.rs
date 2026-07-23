@@ -6,7 +6,10 @@ use bytes::Bytes;
 
 use crate::TopikError;
 pub use bool::BoolEncoding;
-pub use numeric::{I32Encoding, I64Encoding, U8Encoding, U16Encoding, U32Encoding, U64Encoding};
+pub use numeric::{
+    F32Encoding, F64Encoding, I32Encoding, I64Encoding, U8Encoding, U16Encoding, U32Encoding,
+    U64Encoding,
+};
 pub use raw::{RawEncoding, StringEncoding};
 
 /// Abstraction over payload serialization and deserialization.
