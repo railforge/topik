@@ -91,6 +91,18 @@ impl<T: Transport> TopikClient<T> {
             _topic: PhantomData,
         })
     }
+
+    /// Returns the topic string for a message using this client's protocol separator.
+    ///
+    /// ```rust
+    /// let reading = TemperatureReading { device_id: 42, data: Bytes::new() };
+    /// println!("{}", client.display(&reading));
+    /// // MQTT → "sensors/42/temperature"
+    /// // NATS → "sensors.42.temperature"
+    /// ```
+    pub fn display<M: TopicWire>(&self, topic: &M) -> String {
+        topic.render(T::Protocol::SEPARATOR)
+    }
 }
 
 impl<T: Transport + Clone> Clone for TopikClient<T> {

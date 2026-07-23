@@ -60,4 +60,16 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
     pub async fn unsubscribe(self) -> Result<(), TopikError> {
         self.transport.unsubscribe(self.pattern).await
     }
+
+    /// Returns the subscription pattern string.
+    ///
+    /// ```rust
+    /// let sub = client.subscribe::<TemperatureReading>().await?;
+    /// println!("{}", sub.pattern());
+    /// // MQTT → "sensors/+/temperature"
+    /// // NATS → "sensors.*.temperature"
+    /// ```
+    pub fn pattern(&self) -> &str {
+        &self.pattern
+    }
 }
