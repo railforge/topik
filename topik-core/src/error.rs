@@ -25,12 +25,8 @@ pub enum TopikError {
     EncodingMessage(String),
 }
 
-// Compile-time assertion: TopikError must be Send + Sync for use across
-// async task boundaries. A violation here means a variant was added that
-// breaks this guarantee.
-const _: () = {
-    fn assert_send_sync<T: Send + Sync>() {}
-    fn check() {
-        assert_send_sync::<TopikError>();
-    }
-};
+// Compile-time assertion: TopikError must be Send + Sync.
+fn _assert_send_sync() {
+    fn check<T: Send + Sync>() {}
+    check::<TopikError>();
+}

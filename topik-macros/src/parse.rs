@@ -1,23 +1,13 @@
-use proc_macro2::Span;
 use syn::{
     Attribute, DeriveInput, Error, Fields, Ident, LitStr, Path, Result, Type, parse::ParseStream,
-    punctuated::Punctuated, token::Comma,
 };
 
 /// Intermediate representation of a `#[derive(Topic)]` input.
 pub struct TopicInput {
     pub name: Ident,
-
-    /// Ordered list of segments from `#[topic(segments(...))]`.
     pub segments: Vec<SegmentKind>,
-
     pub payload: PayloadField,
-
-    /// Optional encoding path from `#[topic(encoding = ...)]`.
-    /// None = use default (JsonEncoding when json feature is enabled).
-    pub encoding: Option<Path>,
-
-    /// All non-payload fields.
+    pub encoding: Path,
     pub fields: Vec<TopicField>,
 }
 
@@ -42,7 +32,6 @@ pub struct TopicField {
 pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
     let name = input.ident.clone();
 
-    // only named structs supported
     let fields = match &input.data {
         syn::Data::Struct(data) => match &data.fields {
             Fields::Named(fields) => &fields.named,
@@ -67,7 +56,13 @@ pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
         .segments
         .ok_or_else(|| Error::new_spanned(&name, "missing #[topic(segments(...))] attribute"))?;
 
-    let encoding = topic_attrs.encoding;
+    // encoding is required — validate here with a proper span
+    let encoding = topic_attrs.encoding.ok_or_else(|| {
+        Error::new_spanned(
+            &name,
+            "missing encoding — add #[topic(encoding = YourEncoding)] to your struct",
+        )
+    })?;
 
     let mut payload: Option<PayloadField> = None;
     let mut topic_fields: Vec<TopicField> = Vec::new();
@@ -80,7 +75,6 @@ pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
 
         match (has_payload_attr(&field.attrs), payload.is_some()) {
             (true, true) => {
-                // see a payload field while one was already discovered
                 return Err(Error::new_spanned(
                     field,
                     "only one field can be marked #[payload]",
@@ -102,7 +96,6 @@ pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
     let payload =
         payload.ok_or_else(|| Error::new_spanned(&name, "one field must be marked #[payload]"))?;
 
-    // validate all dynamic segments refer to real fields
     for segment in &segments {
         if let SegmentKind::Dynamic(ident) = segment {
             let exists = topic_fields.iter().any(|f| f.name == *ident);
@@ -129,7 +122,7 @@ struct TopicAttrs {
     encoding: Option<Path>,
 }
 
-fn parse_topic_attrs(attrs: &[Attribute], span: &Ident) -> Result<TopicAttrs> {
+fn parse_topic_attrs(attrs: &[Attribute], _span: &Ident) -> Result<TopicAttrs> {
     let mut segments: Option<Vec<SegmentKind>> = None;
     let mut encoding: Option<Path> = None;
 
@@ -172,7 +165,6 @@ fn parse_segments(input: ParseStream) -> Result<Vec<SegmentKind>> {
             return Err(input.error("expected a string literal or field name in segments(...)"));
         }
 
-        // consume comma if present
         if input.peek(syn::Token![,]) {
             input.parse::<syn::Token![,]>()?;
         }

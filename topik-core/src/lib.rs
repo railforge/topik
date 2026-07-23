@@ -17,7 +17,10 @@ mod error;
 mod segments;
 mod topic;
 
-pub use encoding::{Encoding, RawEncoding};
+pub use encoding::{
+    BoolEncoding, Encoding, I32Encoding, I64Encoding, RawEncoding, StringEncoding, U8Encoding,
+    U16Encoding, U32Encoding, U64Encoding,
+};
 pub use error::TopikError;
 pub use segments::{
     BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, Segment, StandardBool, TrueFalse,
