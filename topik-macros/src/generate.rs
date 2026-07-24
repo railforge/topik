@@ -50,7 +50,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 .iter()
                 .find(|f| f.name == *ident)
                 .map(|f| &f.ty)
-                .expect("segment field not found — should have been caught in parse.rs");
+                .expect("segment field not found");
             quote! {
                 let #ident = <#field_ty as ::topik_core::__private::Segment>::parse(
                     parts.get(#i).ok_or(::topik_core::TopikError::MissingSegment {

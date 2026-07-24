@@ -1,11 +1,12 @@
 # topik
 
 <p align="center">
-  <img src="../assets/topik-logo.png" alt="topik logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/railforge/topik/main/assets/topik-logo.png" alt="topik logo" width="200"/>
 </p>
 
 [![CI](https://github.com/railforge/topik/workflows/CI/badge.svg)](https://github.com/railforge/topik/actions)
 [![Crates.io](https://img.shields.io/crates/v/topik.svg)](https://crates.io/crates/topik)
+[![docs.rs](https://docs.rs/topik/badge.svg)](https://docs.rs/topik)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 You know your topics. Now your compiler can too.
@@ -243,8 +244,8 @@ Early development `v0.1.x`. Core traits, derive macros, and in-memory transport 
 
 Real broker transports are in progress. API may change before `v1.0`.
 
-Contributions and feedback welcome — open an issue or PR on [GitHub](https://github.com/railforge/topik).
+Contributions and feedback welcome. Open an issue or PR on [GitHub](https://github.com/railforge/topik).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT see [LICENSE](LICENSE).

@@ -10,9 +10,9 @@ mod parse;
 ///
 /// # Required attributes
 ///
-/// - `#[topic(segments(...))]` — ordered list of topic path segments
-/// - `#[topic(encoding = ...)]` — payload encoding type
-/// - `#[payload]` — marks exactly one field as the message payload
+/// - `#[topic(segments(...))]` ordered list of topic path segments
+/// - `#[topic(encoding = ...)]` payload encoding type
+/// - `#[payload]` marks exactly one field as the message payload
 ///
 /// # Example
 ///

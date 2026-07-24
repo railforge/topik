@@ -10,7 +10,7 @@
 ///
 /// See the unit tests below for usage examples.
 pub fn matches_pattern(topic: &str, pattern: &str, sep: char, single: &str, multi: &str) -> bool {
-    // fast path — exact match
+    // fast path (exact match)
     if topic == pattern {
         return true;
     }
@@ -23,19 +23,19 @@ pub fn matches_pattern(topic: &str, pattern: &str, sep: char, single: &str, mult
 
 fn match_segments(topic: &[&str], pattern: &[&str], single: &str, multi: &str) -> bool {
     match (topic, pattern) {
-        // both exhausted — full match
+        // both exhausted
         ([], []) => true,
 
-        // pattern has multi wildcard as last segment — matches everything remaining
+        // pattern has multi wildcard as last segment
         (_, [p]) if *p == multi => !topic.is_empty(),
 
-        // both have segments — check head and recurse
+        // both have segments
         ([t, topic_rest @ ..], [p, pattern_rest @ ..]) => {
             let head_matches = *p == single || *p == *t;
             head_matches && match_segments(topic_rest, pattern_rest, single, multi)
         }
 
-        // lengths don't match and no multi wildcard — no match
+        // lengths don't match and no multi wildcard
         _ => false,
     }
 }

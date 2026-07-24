@@ -30,7 +30,7 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
     /// Wait for the next typed message from the broker.
     ///
     /// Parses the topic string and decodes the payload automatically.
-    /// Silently skips messages that fail to parse or decode — these are
+    /// Silently skips messages that fail to parse or decode. These are
     /// likely from legacy publishers on the same topic pattern.
     ///
     /// Returns `None` when the stream is closed.
@@ -54,7 +54,7 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
 
     /// Explicitly unsubscribe from the topic pattern.
     ///
-    /// Consumes the subscriber — it cannot be used after unsubscribing.
+    /// Consumes the subscriber. Cannot be used after unsubscribing.
     /// If you drop the subscriber without calling this, the subscription
     /// may remain active until the connection closes.
     pub async fn unsubscribe(self) -> Result<(), TopikError> {

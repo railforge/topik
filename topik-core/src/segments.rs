@@ -143,16 +143,16 @@ impl Segment for String {
 /// ```ignore
 /// use topik_core::{StandardBool, BinaryBool, YesNoBool, OnOffBool};
 ///
-/// // "true" / "false"  — default, most common
+/// // "true" / "false" default, most common
 /// type MyBool = StandardBool;
 ///
-/// // "1" / "0"  — common in industrial/legacy systems
+/// // "1" / "0" common in industrial/legacy systems
 /// type MyFlag = BinaryBool;
 ///
 /// // "yes" / "no"
 /// type MyAnswer = YesNoBool;
 ///
-/// // "on" / "off"  — common in IoT/home automation
+/// // "on" / "off" common in IoT/home automation
 /// type MySwitch = OnOffBool;
 /// ```
 pub trait BoolRepr {
@@ -163,8 +163,7 @@ pub trait BoolRepr {
 /// A boolean topic segment with a configurable string representation.
 ///
 /// The representation is defined by a [`BoolRepr`] implementation,
-/// making the true/false strings part of the type — no runtime configuration
-/// needed.
+/// making the true/false strings part of the type.
 ///
 /// # Example
 ///
@@ -184,7 +183,7 @@ pub trait BoolRepr {
 ///     state: BoolSegment<OnOff>,
 /// }
 ///
-/// // subscriber receives typed state — no string parsing
+/// // subscriber receives typed state
 /// client.subscribe::<LightState>(|msg| async move {
 ///     if msg.state.as_bool() {
 ///         println!("light in {} is on", msg.room);

@@ -77,7 +77,7 @@ impl Protocol for Nats {
 
 /// Redis pub/sub protocol marker.
 ///
-/// Uses `:` as separator. Redis uses glob-style pattern matching —
+/// Uses `:` as separator. Redis uses glob-style pattern matching,
 /// `*` matches any sequence of characters within a segment.
 /// There is no true multi-level wildcard; `*` serves both roles.
 pub struct Redis;

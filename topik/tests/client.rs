@@ -194,7 +194,6 @@ async fn unsubscribe_stops_receiving() {
     // unsubscribe
     sub.unsubscribe().await.unwrap();
 
-    // publish another — nobody listening
     client
         .publish(TemperatureReading {
             device_id: 2,

@@ -14,7 +14,7 @@ pub use raw::{RawEncoding, StringEncoding};
 
 /// Abstraction over payload serialization and deserialization.
 ///
-/// Topik is encoding-agnostic — JSON, Protobuf, raw strings, or raw bytes
+/// Topik is encoding-agnostic: JSON, Protobuf, raw strings, or raw bytes
 /// all plug in through this trait. Implementations are stateless marker
 /// types, meaning the encoding strategy is part of the type itself rather
 /// than runtime configuration.

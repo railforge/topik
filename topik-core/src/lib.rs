@@ -6,10 +6,10 @@
 //!
 //! # Crate contents
 //!
-//! - [`TopikError`] — error type for all topik operations
-//! - [`BoolRepr`] — trait for configurable boolean segment representations
-//! - [`Encoding`] — trait for payload serialization strategies
-//! - [`Topic`] — the core trait users derive on their topic structs
+//! - [`TopikError`] error type for all topik operations
+//! - [`BoolRepr`] trait for configurable boolean segment representations
+//! - [`Encoding`] trait for payload serialization strategies
+//! - [`Topic`] the core trait users derive on their topic structs
 mod encoding;
 mod error;
 pub mod protocol;

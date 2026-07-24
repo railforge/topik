@@ -56,11 +56,11 @@ pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
         .segments
         .ok_or_else(|| Error::new_spanned(&name, "missing #[topic(segments(...))] attribute"))?;
 
-    // encoding is required — validate here with a proper span
+    // encoding is required
     let encoding = topic_attrs.encoding.ok_or_else(|| {
         Error::new_spanned(
             &name,
-            "missing encoding — add #[topic(encoding = YourEncoding)] to your struct",
+            "missing encoding. Add #[topic(encoding = YourEncoding)] to your struct",
         )
     })?;
 
@@ -142,8 +142,7 @@ fn parse_topic_attrs(attrs: &[Attribute], _span: &Ident) -> Result<TopicAttrs> {
                 encoding = Some(meta.input.parse::<Path>()?);
                 Ok(())
             } else {
-                Err(meta
-                    .error("unknown topic attribute — expected segments(...) or encoding = ..."))
+                Err(meta.error("unknown topic attribute. Expected segments(...) or encoding = ..."))
             }
         })?;
     }

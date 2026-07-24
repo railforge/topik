@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 
 /// Boolean payload encoding with configurable string representation.
 ///
-/// Reuses [`BoolRepr`] — the same representation you use for a bool
+/// Reuses [`BoolRepr`] for the same representation you use for a bool
 /// topic segment can be used for a bool payload.
 ///
 /// ```ignore
