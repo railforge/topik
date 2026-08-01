@@ -1,0 +1,13 @@
+[advisories]
+ignore = [
+    # rustls-webpki vulnerabilities from rumqttc's TLS dependency stack.
+    # These only affect TLS connections, not plain MQTT on port 1883.
+    # Tracked upstream: https://github.com/bytebeamio/rumqtt/issues/XXX
+    # Will be resolved when rumqttc upgrades its rustls stack.
+    # See RFC discussion: https://github.com/railforge/topik/discussions/1
+    "RUSTSEC-2026-0104",
+    "RUSTSEC-2026-0098",
+    "RUSTSEC-2026-0099",
+    "RUSTSEC-2026-0049",
+    "RUSTSEC-2025-0134",
+]

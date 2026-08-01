@@ -2,6 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/topik-macros.svg)](https://crates.io/crates/topik-macros)
 [![docs.rs](https://docs.rs/topik-macros/badge.svg)](https://docs.rs/topik-macros)
+[![MSRV](https://img.shields.io/badge/rustc-1.88+-blue.svg)](https://blog.rust-lang.org/2025/05/15/Rust-1.88.0.html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Proc macros for [topik](https://crates.io/crates/topik).

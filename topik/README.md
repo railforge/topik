@@ -5,8 +5,10 @@
 </p>
 
 [![CI](https://github.com/railforge/topik/workflows/CI/badge.svg)](https://github.com/railforge/topik/actions)
+[![Security Audit](https://github.com/railforge/topik/workflows/Security%20Audit/badge.svg)](https://github.com/railforge/topik/actions/workflows/audit.yml)
 [![Crates.io](https://img.shields.io/crates/v/topik.svg)](https://crates.io/crates/topik)
 [![docs.rs](https://docs.rs/topik/badge.svg)](https://docs.rs/topik)
+[![MSRV](https://img.shields.io/badge/rustc-1.88+-blue.svg)](https://blog.rust-lang.org/2025/05/15/Rust-1.88.0.html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 You know your topics. Now your compiler can too.
@@ -20,7 +22,7 @@ Topik brings compile-time type safety to pub/sub. Define your messaging infrastr
 A raw MQTT topic:
 
 ```
-factory/sensors/42/temperature → f32
+factory/sensors/42/temperature -> f32
 ```
 
 Becomes a typed Rust definition:
@@ -108,7 +110,7 @@ Subscribe to all messages of a topic type:
 let mut sub = client.subscribe::<TemperatureReading>().await?;
 
 while let Some(msg) = sub.next().await {
-    println!("device {} → {}°C", msg.device_id, msg.data);
+    println!("device {} -> {}°C", msg.device_id, msg.data);
 }
 ```
 
@@ -264,14 +266,17 @@ Each step is independent. No big rewrites. The compiler tracks your progress.
 - [x] Typed topic definitions via `#[derive(Topic)]`
 - [x] Compile-time segment and payload type checking
 - [x] Protocol-agnostic separators and wildcards (MQTT, NATS, Redis)
+- [x] `InMemoryTransport` for testing without a broker
 - [x] `InMemoryTransport` as typed in-process pub/sub bus
 - [x] Pinned subscriptions
 - [x] `TopicEnum` for grouping multiple topic types
 - [x] `subscribe_many`: unified subscription over multiple topic types
-- [ ] `MqttTransport`: real MQTT broker support
-- [ ] `NatsTransport`: NATS support
+- [x] `MqttClient` Mode 1: typed topics on real MQTT broker (rumqttc)
+- [ ] `MqttClient` Mode 2: managed stream, no event loop boilerplate
+- [ ] `NatsClient`: NATS support
 - [ ] `JsonEncoding`: serde JSON payloads
 - [ ] `ProtobufEncoding`: prost protobuf payloads
+- [ ] Service manifest: declare inbound/outbound topics per service
 - [ ] Cross-language schema export from topic definitions
 
 ## Examples
@@ -280,6 +285,7 @@ Each step is independent. No big rewrites. The compiler tracks your progress.
 cargo run --example basic          # publish, subscribe, wildcard matching
 cargo run --example typed_payload  # numeric and float payloads
 cargo run --example topic_enum     # multiple topic types with subscribe_many
+cargo run --example mqtt --features mqtt  # real MQTT broker
 ```
 
 See [`topik/examples/`](topik/examples/) for the full source.
