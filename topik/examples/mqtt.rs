@@ -1,8 +1,8 @@
 //! MQTT example: typed topics with a real MQTT broker.
 //!
-//! Requires a running MQTT broker. By default connects to localhost:1883.
+//! Requires a running MQTT broker on localhost:1883.
 //!
-//! Start a broker with Docker:
+//! Start one with Docker:
 //!   docker run -it -p 1883:1883 eclipse-mosquitto
 //!
 //! Run with:
@@ -10,7 +10,7 @@
 
 #[cfg(feature = "mqtt")]
 mod example {
-    use rumqttc::{Event, Packet};
+    use rumqttc::{Event, Packet, QoS};
     use topik::encoding::F32Encoding;
     use topik::{MqttClient, Topic, TopicEnum};
 
@@ -37,13 +37,12 @@ mod example {
     }
 
     pub async fn run() {
-        // subscriber client
+        // two clients (MQTT requires unique client_id per connection)
         let (sub_client, mut eventloop) = MqttClient::builder()
             .url("localhost", 1883)
             .client_id("topik-example-sub")
             .build();
 
-        // publisher client — separate client_id required by MQTT
         let (pub_client, mut pub_eventloop) = MqttClient::builder()
             .url("localhost", 1883)
             .client_id("topik-example-pub")
@@ -52,30 +51,38 @@ mod example {
         // poll publisher event loop in background
         tokio::spawn(async move { while pub_eventloop.poll().await.is_ok() {} });
 
-        // subscribe to all topics in the enum
+        // Subscribing
         sub_client.subscribe_many::<SensorTopics>().await.unwrap();
-        println!("Subscribed to: {:?}", SensorTopics::patterns('/', "+", "#"));
+        println!("Subscribed to:");
+        for pattern in SensorTopics::patterns('/', "+", "#") {
+            println!("  {}", pattern);
+        }
 
-        // publish some messages
+        // Publishing with display
+        let reading1 = TemperatureReading {
+            device_id: 42,
+            data: 23.5,
+        };
+        println!("\nPublishing to: {}", pub_client.display(&reading1));
+        pub_client.publish(reading1).await.unwrap();
+
+        // publish with explicit QoS and retain chained
+        let reading2 = HumidityReading {
+            device_id: 42,
+            data: 65.0,
+        };
+        println!(
+            "Publishing to: {} (QoS::AtLeastOnce, retain=false)",
+            pub_client.display(&reading2)
+        );
         pub_client
-            .publish(TemperatureReading {
-                device_id: 42,
-                data: 23.5,
-            })
+            .publish(reading2)
+            .qos(QoS::AtLeastOnce)
+            .retain(false)
             .await
             .unwrap();
-        println!("Published: sensors/42/temperature → 23.5°C");
 
-        pub_client
-            .publish(HumidityReading {
-                device_id: 42,
-                data: 65.0,
-            })
-            .await
-            .unwrap();
-        println!("Published: sensors/42/humidity → 65.0%");
-
-        // receive and parse — user owns the event loop
+        // Receiving with parse
         let mut received = 0;
         println!("\nReceived messages:");
         while received < 2 {
@@ -97,6 +104,34 @@ mod example {
                             received += 1;
                         }
                         Err(_) => {}
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        // parse_topic for a single topic type
+        let reading3 = TemperatureReading {
+            device_id: 99,
+            data: 18.0,
+        };
+        println!("\nPublishing to: {}", pub_client.display(&reading3));
+        pub_client.publish(reading3).await.unwrap();
+
+        loop {
+            match eventloop.poll().await.unwrap() {
+                Event::Incoming(Packet::Publish(p)) => {
+                    if let Some(msg) = sub_client
+                        .parse_topic::<TemperatureReading>(&p.topic, &p.payload)
+                        .unwrap()
+                    {
+                        if msg.device_id == 99 {
+                            println!(
+                                "parse_topic → device {} sent {:.1}°C",
+                                msg.device_id, msg.data
+                            );
+                            break;
+                        }
                     }
                 }
                 _ => {}

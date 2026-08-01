@@ -19,6 +19,6 @@ tokio = { version = "1", features = ["sync", "rt"] }
 rumqttc = { version = "0.25", optional = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "sync"] }
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "sync", "time"] }
 testcontainers = "0.27"
 testcontainers-modules = { version = "0.15", features = ["mosquitto"] }

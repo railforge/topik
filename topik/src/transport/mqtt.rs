@@ -137,15 +137,26 @@ mod mqtt_impl {
 
         /// Publish a typed topic message.
         ///
-        /// Renders the topic string using MQTT separator and encodes the payload.
-        /// Default QoS is AtLeastOnce, retain is false.
-        pub async fn publish<M: TopicWire>(&self, topic: M) -> Result<(), TopikError> {
-            let topic_str = topic.render(Mqtt::SEPARATOR);
-            let payload = M::Encoding::encode(topic.payload())?;
-            self.inner
-                .publish(topic_str, QoS::AtLeastOnce, false, payload.to_vec())
-                .await
-                .map_err(|e| TopikError::Encoding(Box::new(e)))
+        /// Await directly for default settings (QoS::AtLeastOnce, retain false),
+        /// or chain options before awaiting:
+        ///
+        /// ```ignore
+        /// // default
+        /// client.publish(TemperatureReading { device_id: 42, data: 23.5 }).await?;
+        ///
+        /// // with options
+        /// client.publish(TemperatureReading { device_id: 42, data: 23.5 })
+        ///     .qos(QoS::AtMostOnce)
+        ///     .retain(true)
+        ///     .await?;
+        /// ```
+        pub fn publish<M: TopicWire>(&self, topic: M) -> MqttPublishBuilder<M> {
+            MqttPublishBuilder {
+                client: self.inner.clone(),
+                topic,
+                qos: QoS::AtLeastOnce,
+                retain: false,
+            }
         }
 
         /// Parse an incoming MQTT publish packet into a typed TopicEnum variant.
@@ -194,8 +205,62 @@ mod mqtt_impl {
                 .await
                 .map_err(|e| TopikError::Encoding(Box::new(e)))
         }
+
+        /// Returns the topic string for a message using MQTT separator.
+        ///
+        /// Useful for logging and debugging.
+        ///
+        /// ```ignore
+        /// let reading = TemperatureReading { device_id: 42, data: 23.5 };
+        /// println!("{}", client.display(&reading));
+        /// // -> "sensors/42/temperature"
+        /// ```
+        pub fn display<M: TopicWire>(&self, topic: &M) -> String {
+            topic.render(Mqtt::SEPARATOR)
+        }
+    }
+
+    pub struct MqttPublishBuilder<M: TopicWire> {
+        client: AsyncClient,
+        topic: M,
+        qos: QoS,
+        retain: bool,
+    }
+
+    impl<M: TopicWire> MqttPublishBuilder<M> {
+        /// Set the QoS level for this publish.
+        ///
+        /// Default is `QoS::AtLeastOnce`.
+        pub fn qos(mut self, qos: QoS) -> Self {
+            self.qos = qos;
+            self
+        }
+
+        /// Set the retain flag for this publish.
+        ///
+        /// Default is `false`.
+        pub fn retain(mut self, retain: bool) -> Self {
+            self.retain = retain;
+            self
+        }
+    }
+
+    impl<M: TopicWire + Send + 'static> std::future::IntoFuture for MqttPublishBuilder<M> {
+        type Output = Result<(), TopikError>;
+        type IntoFuture = std::pin::Pin<Box<dyn std::future::Future<Output = Self::Output> + Send>>;
+
+        fn into_future(self) -> Self::IntoFuture {
+            Box::pin(async move {
+                let topic_str = self.topic.render(Mqtt::SEPARATOR);
+                let payload = M::Encoding::encode(self.topic.payload())?;
+                self.client
+                    .publish(topic_str, self.qos, self.retain, payload.to_vec())
+                    .await
+                    .map_err(|e| TopikError::Encoding(Box::new(e)))
+            })
+        }
     }
 }
 
 #[cfg(feature = "mqtt")]
-pub use mqtt_impl::{MqttClient, MqttClientBuilder};
+pub use mqtt_impl::{MqttClient, MqttClientBuilder, MqttPublishBuilder};
