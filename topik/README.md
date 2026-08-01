@@ -128,6 +128,49 @@ println!("{}", sub.pattern());
 // MQTT -> "factory/sensors/+/temperature"
 ```
 
+## Multiple topic types
+
+Group related topics into an enum to handle them through a single subscriber.
+
+```rust
+#[derive(TopicEnum)]
+enum SensorTopics {
+    Temperature(TemperatureReading),
+    Humidity(HumidityReading),
+    Reboot(RebootCommand),
+}
+
+let mut sub = client.subscribe_many::<SensorTopics>().await?;
+
+while let Some(event) = sub.next().await {
+    match event {
+        SensorTopics::Temperature(msg) => println!("{}°C", msg.data),
+        SensorTopics::Humidity(msg) => println!("{}%", msg.data),
+        SensorTopics::Reboot(msg) => println!("reboot {}", msg.device_id),
+    }
+}
+```
+
+The compiler enforces exhaustive matching. Missing a variant is a compile error.
+
+`InMemoryTransport` also works as a typed in-process event bus — no broker needed:
+
+```rust
+let transport = InMemoryTransport::<Mqtt>::new();
+
+let producer = TopikClient::new(transport.clone());
+let consumer = TopikClient::new(transport.clone());
+
+tokio::spawn(async move {
+    producer.publish(TemperatureReading { device_id: 1, data: 23.5 }).await?;
+});
+
+let mut sub = consumer.subscribe_many::<SensorTopics>().await?;
+while let Some(event) = sub.next().await {
+    match event { ... }
+}
+```
+
 ## Defining topics
 
 A topic is a Rust struct with `#[derive(Topic)]`.
@@ -221,8 +264,10 @@ Each step is independent. No big rewrites. The compiler tracks your progress.
 - [x] Typed topic definitions via `#[derive(Topic)]`
 - [x] Compile-time segment and payload type checking
 - [x] Protocol-agnostic separators and wildcards (MQTT, NATS, Redis)
-- [x] `InMemoryTransport` for testing without a broker
+- [x] `InMemoryTransport` as typed in-process pub/sub bus
 - [x] Pinned subscriptions
+- [x] `TopicEnum` for grouping multiple topic types
+- [x] `subscribe_many`: unified subscription over multiple topic types
 - [ ] `MqttTransport`: real MQTT broker support
 - [ ] `NatsTransport`: NATS support
 - [ ] `JsonEncoding`: serde JSON payloads
@@ -232,8 +277,9 @@ Each step is independent. No big rewrites. The compiler tracks your progress.
 ## Examples
 
 ```bash
-cargo run --example basic         # publish, subscribe, wildcard matching
-cargo run --example typed_payload # numeric and float payloads
+cargo run --example basic          # publish, subscribe, wildcard matching
+cargo run --example typed_payload  # numeric and float payloads
+cargo run --example topic_enum     # multiple topic types with subscribe_many
 ```
 
 See [`topik/examples/`](topik/examples/) for the full source.

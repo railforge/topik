@@ -5,19 +5,22 @@
 //! # Quick start
 //!
 //! ```ignore
-//! use topik::Topic;
-//! use topik::TopikClient;
-//! use topik::encoding::RawEncoding;
+//! use topik::{Topic, TopicEnum, TopikClient};
+//! use topik::encoding::F32Encoding;
 //! use topik::protocol::Mqtt;
 //! use topik::transport::InMemoryTransport;
-//! use bytes::Bytes;
 //!
 //! #[derive(Topic)]
-//! #[topic(segments("sensors", device_id), encoding = RawEncoding)]
+//! #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
 //! pub struct TemperatureReading {
 //!     pub device_id: u64,
 //!     #[payload]
-//!     pub data: Bytes,
+//!     pub data: f32,
+//! }
+//!
+//! #[derive(TopicEnum)]
+//! pub enum SensorTopics {
+//!     Temperature(TemperatureReading),
 //! }
 //!
 //! #[tokio::main]
@@ -26,12 +29,16 @@
 //!
 //!     client.publish(TemperatureReading {
 //!         device_id: 42,
-//!         data: Bytes::from("23.5"),
+//!         data: 23.5,
 //!     }).await?;
 //!
-//!     let mut sub = client.subscribe::<TemperatureReading>().await?;
-//!     while let Some(msg) = sub.next().await {
-//!         println!("device {} sent {:?}", msg.device_id, msg.data);
+//!     let mut sub = client.subscribe_many::<SensorTopics>().await?;
+//!     while let Some(event) = sub.next().await {
+//!         match event {
+//!             SensorTopics::Temperature(msg) => {
+//!                 println!("device {} → {}°C", msg.device_id, msg.data);
+//!             }
+//!         }
 //!     }
 //!
 //!     Ok(())
@@ -43,7 +50,7 @@ mod subscriber;
 
 pub use client::TopikClient;
 pub use subscriber::{EnumSubscriber, Subscriber};
-pub use topik_core::{Topic, TopikError};
+pub use topik_core::{Topic, TopicEnum, TopikError};
 pub use topik_macros::{Topic, TopicEnum};
 
 pub mod encoding {

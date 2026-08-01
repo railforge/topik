@@ -134,10 +134,10 @@ impl<E: TopicEnum> EnumSubscriber<E> {
             let tx = tx.clone();
             tokio::spawn(async move {
                 while let Some(raw) = stream.next().await {
-                    if let Ok(event) = E::try_from_raw(&raw.topic, &raw.payload, sep) {
-                        if tx.send(event).await.is_err() {
-                            break;
-                        }
+                    if let Ok(event) = E::try_from_raw(&raw.topic, &raw.payload, sep)
+                        && tx.send(event).await.is_err()
+                    {
+                        break;
                     }
                 }
             });

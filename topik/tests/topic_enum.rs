@@ -5,7 +5,6 @@ use topik::encoding::{F32Encoding, RawEncoding};
 use topik::protocol::{Mqtt, Nats};
 use topik::transport::InMemoryTransport;
 use topik::{Topic, TopicEnum, TopikClient};
-use topik_core::TopicEnum as TopicEnumTrait;
 
 #[derive(Topic, Debug)]
 #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
