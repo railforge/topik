@@ -89,7 +89,7 @@ async fn main() {
         .await
         .unwrap();
     let msg = sub.next().await.unwrap();
-    println!("f32     → device {} sent {:.1}°C", msg.device_id, msg.data);
+    println!("f32     -> device {} sent {:.1}°C", msg.device_id, msg.data);
     sub.unsubscribe().await.unwrap();
 
     // String
@@ -102,7 +102,7 @@ async fn main() {
         .await
         .unwrap();
     let msg = sub.next().await.unwrap();
-    println!("String  → device {} is {}", msg.device_id, msg.data);
+    println!("String  -> device {} is {}", msg.device_id, msg.data);
     sub.unsubscribe().await.unwrap();
 
     // bool (OneZero)
@@ -115,7 +115,7 @@ async fn main() {
         .await
         .unwrap();
     let msg = sub.next().await.unwrap();
-    println!("bool    → device {} active: {}", msg.device_id, msg.data);
+    println!("bool    -> device {} active: {}", msg.device_id, msg.data);
     sub.unsubscribe().await.unwrap();
 
     // u64
@@ -128,7 +128,7 @@ async fn main() {
         .await
         .unwrap();
     let msg = sub.next().await.unwrap();
-    println!("u64     → device {} count: {}", msg.device_id, msg.data);
+    println!("u64     -> device {} count: {}", msg.device_id, msg.data);
     sub.unsubscribe().await.unwrap();
 
     // i32
@@ -141,7 +141,7 @@ async fn main() {
         .await
         .unwrap();
     let msg = sub.next().await.unwrap();
-    println!("i32     → device {} offset: {}°C", msg.device_id, msg.data);
+    println!("i32     -> device {} offset: {}°C", msg.device_id, msg.data);
     sub.unsubscribe().await.unwrap();
 
     // Raw bytes
@@ -154,6 +154,6 @@ async fn main() {
         .await
         .unwrap();
     let msg = sub.next().await.unwrap();
-    println!("Bytes   → device {} raw: {:?}", msg.device_id, msg.data);
+    println!("Bytes   -> device {} raw: {:?}", msg.device_id, msg.data);
     sub.unsubscribe().await.unwrap();
 }

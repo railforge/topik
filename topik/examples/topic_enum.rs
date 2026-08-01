@@ -79,19 +79,19 @@ async fn main() {
         match sub.next().await.unwrap() {
             SensorTopics::Temperature(msg) => {
                 println!(
-                    "Temperature → device {} sent {:.1}°C",
+                    "Temperature -> device {} sent {:.1}°C",
                     msg.device_id, msg.data
                 )
             }
             SensorTopics::Humidity(msg) => {
                 println!(
-                    "Humidity    → device {} sent {:.1}%",
+                    "Humidity    -> device {} sent {:.1}%",
                     msg.device_id, msg.data
                 )
             }
             SensorTopics::Reboot(msg) => {
                 println!(
-                    "Reboot      → device {} requested {}",
+                    "Reboot      -> device {} requested {}",
                     msg.device_id,
                     String::from_utf8_lossy(&msg.data)
                 )

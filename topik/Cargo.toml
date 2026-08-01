@@ -6,15 +6,18 @@ description = "Typed pub/sub topics for Rust"
 license = "MIT"
 repository = "https://github.com/railforge/topik"
 
+[features]
+default = []
+mqtt = ["dep:rumqttc"]
+
 [dependencies]
 topik-core = { version = "0.1", path = "../topik-core" }
 topik-macros = { version = "0.1", path = "../topik-macros" }
 bytes = "1"
 tokio = { version = "1", features = ["sync", "rt"] }
+rumqttc = { version = "0.25", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "sync"] }
-
-[features]
-default = []
-mqtt = []
+testcontainers = "0.27"
+testcontainers-modules = { version = "0.15", features = ["mosquitto"] }

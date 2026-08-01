@@ -73,6 +73,9 @@ pub mod protocol {
 
 pub mod transport;
 
+#[cfg(feature = "mqtt")]
+pub use transport::{MqttClient, MqttClientBuilder};
+
 #[doc(hidden)]
 pub mod __private {
     pub use topik_core::__private::*;

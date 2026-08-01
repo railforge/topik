@@ -20,7 +20,7 @@ Topik brings compile-time type safety to pub/sub. Define your messaging infrastr
 A raw MQTT topic:
 
 ```
-factory/sensors/42/temperature → f32
+factory/sensors/42/temperature -> f32
 ```
 
 Becomes a typed Rust definition:
@@ -108,7 +108,7 @@ Subscribe to all messages of a topic type:
 let mut sub = client.subscribe::<TemperatureReading>().await?;
 
 while let Some(msg) = sub.next().await {
-    println!("device {} → {}°C", msg.device_id, msg.data);
+    println!("device {} -> {}°C", msg.device_id, msg.data);
 }
 ```
 
