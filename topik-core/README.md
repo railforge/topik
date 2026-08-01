@@ -2,6 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/topik-core.svg)](https://crates.io/crates/topik-core)
 [![docs.rs](https://docs.rs/topik-core/badge.svg)](https://docs.rs/topik-core)
+[![MSRV](https://img.shields.io/badge/rustc-1.88+-blue.svg)](https://blog.rust-lang.org/2025/05/15/Rust-1.88.0.html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Core traits for [topik](https://crates.io/crates/topik).

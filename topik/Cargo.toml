@@ -5,6 +5,7 @@ edition = "2024"
 description = "Typed pub/sub topics for Rust"
 license = "MIT"
 repository = "https://github.com/railforge/topik"
+rust-version = "1.88"
 
 [features]
 default = []

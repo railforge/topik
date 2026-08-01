@@ -5,6 +5,7 @@ edition = "2024"
 description = "Proc macros for topik"
 license = "MIT"
 repository = "https://github.com/railforge/topik"
+rust-version = "1.88"
 
 [lib]
 proc-macro = true

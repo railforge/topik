@@ -5,8 +5,10 @@
 </p>
 
 [![CI](https://github.com/railforge/topik/workflows/CI/badge.svg)](https://github.com/railforge/topik/actions)
+[![Security Audit](https://github.com/railforge/topik/workflows/Security%20Audit/badge.svg)](https://github.com/railforge/topik/actions/workflows/audit.yml)
 [![Crates.io](https://img.shields.io/crates/v/topik.svg)](https://crates.io/crates/topik)
 [![docs.rs](https://docs.rs/topik/badge.svg)](https://docs.rs/topik)
+[![MSRV](https://img.shields.io/badge/rustc-1.88+-blue.svg)](https://blog.rust-lang.org/2025/05/15/Rust-1.88.0.html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 You know your topics. Now your compiler can too.
