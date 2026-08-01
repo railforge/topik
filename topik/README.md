@@ -264,14 +264,17 @@ Each step is independent. No big rewrites. The compiler tracks your progress.
 - [x] Typed topic definitions via `#[derive(Topic)]`
 - [x] Compile-time segment and payload type checking
 - [x] Protocol-agnostic separators and wildcards (MQTT, NATS, Redis)
+- [x] `InMemoryTransport` for testing without a broker
 - [x] `InMemoryTransport` as typed in-process pub/sub bus
 - [x] Pinned subscriptions
 - [x] `TopicEnum` for grouping multiple topic types
 - [x] `subscribe_many`: unified subscription over multiple topic types
-- [ ] `MqttTransport`: real MQTT broker support
-- [ ] `NatsTransport`: NATS support
+- [x] `MqttClient` Mode 1: typed topics on real MQTT broker (rumqttc)
+- [ ] `MqttClient` Mode 2: managed stream, no event loop boilerplate
+- [ ] `NatsClient`: NATS support
 - [ ] `JsonEncoding`: serde JSON payloads
 - [ ] `ProtobufEncoding`: prost protobuf payloads
+- [ ] Service manifest: declare inbound/outbound topics per service
 - [ ] Cross-language schema export from topic definitions
 
 ## Examples
@@ -280,6 +283,7 @@ Each step is independent. No big rewrites. The compiler tracks your progress.
 cargo run --example basic          # publish, subscribe, wildcard matching
 cargo run --example typed_payload  # numeric and float payloads
 cargo run --example topic_enum     # multiple topic types with subscribe_many
+cargo run --example mqtt --features mqtt  # real MQTT broker
 ```
 
 See [`topik/examples/`](topik/examples/) for the full source.
