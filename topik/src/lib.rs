@@ -42,7 +42,7 @@ mod client;
 mod subscriber;
 
 pub use client::TopikClient;
-pub use subscriber::Subscriber;
+pub use subscriber::{EnumSubscriber, Subscriber};
 pub use topik_core::{Topic, TopikError};
 pub use topik_macros::{Topic, TopicEnum};
 

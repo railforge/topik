@@ -7,9 +7,12 @@
 //! # Crate contents
 //!
 //! - [`TopikError`] error type for all topik operations
-//! - [`BoolRepr`] trait for configurable boolean segment representations
-//! - [`Encoding`] trait for payload serialization strategies
 //! - [`Topic`] the core trait users derive on their topic structs
+//! - [`TopicEnum`] groups multiple topic types for unified subscription
+//! - [`Encoding`] trait for payload serialization strategies
+//! - [`BoolRepr`] trait for configurable boolean segment representations
+//! - [`Protocol`] trait for protocol wire format conventions
+//! - [`Transport`] trait for broker transport implementations
 mod encoding;
 mod error;
 pub mod protocol;
@@ -29,13 +32,13 @@ pub use segments::{
     YesNoBool,
 };
 pub use subscribe::SubscribeBuilder;
-pub use topic::Topic;
+pub use topic::{Topic, TopicEnum};
 
 #[doc(hidden)]
 pub mod __private {
     pub use crate::segments::Segment;
     pub use crate::subscribe::SubscribeBuilder;
-    pub use crate::topic::TopicWire;
     pub use crate::topic::private::Sealed;
+    pub use crate::topic::{TopicEnum, TopicWire};
     pub use crate::transport::{MessageStream, RawMessage, Transport};
 }

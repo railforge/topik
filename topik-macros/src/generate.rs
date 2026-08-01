@@ -220,7 +220,7 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
         quote! {
             if let Ok(key) = <#ty as ::topik_core::__private::TopicWire>::parse(topic, sep) {
                 if let Ok(payload) = <#ty as ::topik_core::__private::TopicWire>::decode_payload(
-                    ::bytes::Bytes::copy_from_slice(payload_bytes)
+                    ::bytes::Bytes::copy_from_slice(payload)
                 ) {
                     return Ok(#name::#variant_name(
                         <#ty as ::topik_core::__private::TopicWire>::from_key_and_payload(key, payload)
@@ -231,19 +231,16 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
     });
 
     quote! {
-        impl #name {
-            /// Returns all subscription patterns for this topic enum.
-            pub fn patterns(sep: char, single: &'static str, multi: &'static str) -> Vec<String> {
+        impl ::topik_core::__private::TopicEnum for #name {
+            fn patterns(sep: char, single: &'static str, multi: &'static str) -> Vec<String> {
                 vec![
                     #(#pattern_arms,)*
                 ]
             }
 
-            /// Try to parse a raw topic and payload into one of the variants.
-            /// Returns the first matching variant.
-            pub fn try_parse(
+            fn try_from_raw(
                 topic: &str,
-                payload_bytes: &[u8],
+                payload: &[u8],
                 sep: char,
             ) -> Result<Self, ::topik_core::TopikError> {
                 #(#try_parse_arms)*

@@ -111,3 +111,17 @@ impl<'a, M: TopicWire> std::fmt::Display for TopicDisplay<'a, M> {
         write!(f, "{}", self.topic.render(self.sep))
     }
 }
+
+/// Trait for enums that group multiple topic types for unified subscription.
+///
+/// Implemented automatically by `#[derive(TopicEnum)]`.
+/// Users never implement this directly.
+pub trait TopicEnum: Sized + Send + 'static {
+    /// Returns all wildcard subscription patterns this enum covers.
+    fn patterns(sep: char, single: &'static str, multi: &'static str) -> Vec<String>;
+
+    /// Parse a raw topic string and payload bytes into a typed enum variant.
+    ///
+    /// Called internally by `EnumSubscriber`. Users never call this directly.
+    fn try_from_raw(topic: &str, payload: &[u8], sep: char) -> Result<Self, TopikError>;
+}

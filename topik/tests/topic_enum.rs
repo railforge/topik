@@ -2,10 +2,10 @@
 
 use bytes::Bytes;
 use topik::encoding::{F32Encoding, RawEncoding};
-use topik::protocol::Mqtt;
+use topik::protocol::{Mqtt, Nats};
 use topik::transport::InMemoryTransport;
 use topik::{Topic, TopicEnum, TopikClient};
-use topik_core::Encoding;
+use topik_core::TopicEnum as TopicEnumTrait;
 
 #[derive(Topic, Debug)]
 #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
@@ -57,31 +57,31 @@ fn patterns_nats() {
     assert_eq!(patterns[2], "devices.*.reboot");
 }
 
-// --- try_parse() ---
+// --- try_from_raw() ---
 
 #[test]
-fn try_parse_temperature() {
+fn try_from_raw_temperature() {
     let payload = 23.5f32.to_string();
-    let result = SensorTopics::try_parse("sensors/42/temperature", payload.as_bytes(), '/');
+    let result = SensorTopics::try_from_raw("sensors/42/temperature", payload.as_bytes(), '/');
     assert!(matches!(result, Ok(SensorTopics::Temperature(msg)) if msg.device_id == 42));
 }
 
 #[test]
-fn try_parse_humidity() {
+fn try_from_raw_humidity() {
     let payload = 65.0f32.to_string();
-    let result = SensorTopics::try_parse("sensors/42/humidity", payload.as_bytes(), '/');
+    let result = SensorTopics::try_from_raw("sensors/42/humidity", payload.as_bytes(), '/');
     assert!(matches!(result, Ok(SensorTopics::Humidity(msg)) if msg.device_id == 42));
 }
 
 #[test]
-fn try_parse_reboot() {
-    let result = SensorTopics::try_parse("devices/99/reboot", b"", '/');
+fn try_from_raw_reboot() {
+    let result = SensorTopics::try_from_raw("devices/99/reboot", b"", '/');
     assert!(matches!(result, Ok(SensorTopics::Reboot(msg)) if msg.device_id == 99));
 }
 
 #[test]
-fn try_parse_no_match() {
-    let result = SensorTopics::try_parse("unknown/42/topic", b"", '/');
+fn try_from_raw_no_match() {
+    let result = SensorTopics::try_from_raw("unknown/42/topic", b"", '/');
     assert!(matches!(
         result,
         Err(topik_core::TopikError::ParseError { .. })
@@ -89,20 +89,19 @@ fn try_parse_no_match() {
 }
 
 #[test]
-fn try_parse_wrong_separator() {
+fn try_from_raw_nats_separator() {
     let payload = 23.5f32.to_string();
-    let result = SensorTopics::try_parse("sensors.42.temperature", payload.as_bytes(), '.');
+    let result = SensorTopics::try_from_raw("sensors.42.temperature", payload.as_bytes(), '.');
     assert!(matches!(result, Ok(SensorTopics::Temperature(msg)) if msg.device_id == 42));
 }
 
-// --- integration with TopikClient ---
+// --- subscribe_many ---
 
 #[tokio::test]
-async fn topic_enum_with_client() {
+async fn subscribe_many_receives_all_variants() {
     let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
 
-    let mut temp_sub = client.subscribe::<TemperatureReading>().await.unwrap();
-    let mut humidity_sub = client.subscribe::<HumidityReading>().await.unwrap();
+    let mut sub = client.subscribe_many::<SensorTopics>().await.unwrap();
 
     client
         .publish(TemperatureReading {
@@ -118,16 +117,81 @@ async fn topic_enum_with_client() {
         })
         .await
         .unwrap();
+    client
+        .publish(RebootCommand {
+            device_id: 3,
+            data: Bytes::from("restart"),
+        })
+        .await
+        .unwrap();
 
-    let temp = temp_sub.next().await.unwrap();
-    let humidity = humidity_sub.next().await.unwrap();
+    let msg1 = sub.next().await.unwrap();
+    let msg2 = sub.next().await.unwrap();
+    let msg3 = sub.next().await.unwrap();
 
-    assert_eq!(temp.device_id, 1);
-    assert_eq!(humidity.device_id, 2);
+    assert!(matches!(msg1, SensorTopics::Temperature(msg) if msg.device_id == 1));
+    assert!(matches!(msg2, SensorTopics::Humidity(msg) if msg.device_id == 2));
+    assert!(matches!(msg3, SensorTopics::Reboot(msg) if msg.device_id == 3));
+}
 
-    // manually parse into enum
-    let temp_payload = F32Encoding::encode(&temp.data).unwrap();
-    let topic_str = client.display(&temp);
-    let parsed = SensorTopics::try_parse(&topic_str, &temp_payload, '/').unwrap();
-    assert!(matches!(parsed, SensorTopics::Temperature(_)));
+#[tokio::test]
+async fn subscribe_many_mqtt_and_nats() {
+    // same enum works with any protocol
+    let mqtt_client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
+    let nats_client = TopikClient::new(InMemoryTransport::<Nats>::new());
+
+    let mut mqtt_sub = mqtt_client.subscribe_many::<SensorTopics>().await.unwrap();
+    let mut nats_sub = nats_client.subscribe_many::<SensorTopics>().await.unwrap();
+
+    mqtt_client
+        .publish(TemperatureReading {
+            device_id: 1,
+            data: 20.0,
+        })
+        .await
+        .unwrap();
+    nats_client
+        .publish(TemperatureReading {
+            device_id: 2,
+            data: 21.0,
+        })
+        .await
+        .unwrap();
+
+    let mqtt_msg = mqtt_sub.next().await.unwrap();
+    let nats_msg = nats_sub.next().await.unwrap();
+
+    assert!(matches!(mqtt_msg, SensorTopics::Temperature(msg) if msg.device_id == 1));
+    assert!(matches!(nats_msg, SensorTopics::Temperature(msg) if msg.device_id == 2));
+}
+
+#[tokio::test]
+async fn subscribe_many_pinned() {
+    let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
+
+    // subscribe to all via enum
+    let mut sub = client.subscribe_many::<SensorTopics>().await.unwrap();
+
+    // publish from two different devices
+    client
+        .publish(TemperatureReading {
+            device_id: 42,
+            data: 23.5,
+        })
+        .await
+        .unwrap();
+    client
+        .publish(TemperatureReading {
+            device_id: 99,
+            data: 18.0,
+        })
+        .await
+        .unwrap();
+
+    // both received since subscribe_many wildcards all segments
+    let msg1 = sub.next().await.unwrap();
+    let msg2 = sub.next().await.unwrap();
+
+    assert!(matches!(msg1, SensorTopics::Temperature(msg) if msg.device_id == 42));
+    assert!(matches!(msg2, SensorTopics::Temperature(msg) if msg.device_id == 99));
 }
