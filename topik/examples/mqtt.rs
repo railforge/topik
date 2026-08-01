@@ -37,10 +37,24 @@ mod example {
     }
 
     pub async fn run() {
-        // two clients (MQTT requires unique client_id per connection)
+        // Two clients (MQTT requires unique client_id per connection)
+        // Full builder options shown here (uncomment as needed)
         let (sub_client, mut eventloop) = MqttClient::builder()
             .url("localhost", 1883)
             .client_id("topik-example-sub")
+            .keep_alive(30)
+            .clean_session(true)
+            // .credentials("user", "password")
+            // .last_will(rumqttc::LastWill::new(
+            //     "devices/topik-example-sub/status",
+            //     "offline",
+            //     rumqttc::QoS::AtLeastOnce,
+            //     true,
+            // ))
+            // .with_options(|mut opts| {
+            //     // TLS, websockets, proxy etc
+            //     opts
+            // })
             .build();
 
         let (pub_client, mut pub_eventloop) = MqttClient::builder()

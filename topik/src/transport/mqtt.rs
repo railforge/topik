@@ -9,13 +9,37 @@ mod mqtt_impl {
 
     /// Builder for [`MqttClient`].
     ///
+    /// Created via [`MqttClient::builder()`]. Configure the connection
+    /// then call [`build`](MqttClientBuilder::build) to get the client
+    /// and event loop.
+    ///
     /// # Example
     ///
     /// ```ignore
-    /// let (client, eventloop) = MqttClient::builder()
+    /// use rumqttc::{LastWill, QoS};
+    ///
+    /// let (client, mut eventloop) = MqttClient::builder()
     ///     .url("localhost", 1883)
     ///     .client_id("my-service")
     ///     .keep_alive(30)
+    ///     .clean_session(true)
+    ///     .credentials("user", "password")
+    ///     .last_will(LastWill::new(
+    ///         "devices/my-service/status",
+    ///         "offline",
+    ///         QoS::AtLeastOnce,
+    ///         true,
+    ///     ))
+    ///     .build();
+    ///
+    /// // for TLS or other advanced config use with_options:
+    /// let (client, mut eventloop) = MqttClient::builder()
+    ///     .url("localhost", 8883)
+    ///     .client_id("my-service")
+    ///     .with_options(|mut opts| {
+    ///         opts.set_transport(rumqttc::Transport::tls_with_config(tls_config.into()));
+    ///         opts
+    ///     })
     ///     .build();
     /// ```
     pub struct MqttClientBuilder {
@@ -24,36 +48,131 @@ mod mqtt_impl {
         port: u16,
         keep_alive: Duration,
         channel_capacity: usize,
+        clean_session: bool,
+        credentials: Option<(String, String)>,
+        last_will: Option<rumqttc::LastWill>,
+        options_modifier: Option<Box<dyn FnOnce(MqttOptions) -> MqttOptions>>,
     }
 
     impl MqttClientBuilder {
+        /// Set the MQTT client ID.
         pub fn client_id(mut self, id: impl Into<String>) -> Self {
             self.client_id = id.into();
             self
         }
 
+        /// Set the broker host and port.
         pub fn url(mut self, host: impl Into<String>, port: u16) -> Self {
             self.host = host.into();
             self.port = port;
             self
         }
 
+        /// Set the keep alive interval in seconds.
+        ///
+        /// The broker disconnects the client if no message is received
+        /// within 1.5x this interval. Default is 30 seconds.
         pub fn keep_alive(mut self, secs: u64) -> Self {
             self.keep_alive = Duration::from_secs(secs);
             self
         }
 
+        /// Set the request channel capacity. Default is 10.
         pub fn channel_capacity(mut self, capacity: usize) -> Self {
             self.channel_capacity = capacity;
             self
         }
 
+        /// Set the clean session flag.
+        ///
+        /// When `true` the broker clears all state on disconnect.
+        /// When `false` the broker holds state for reconnection with
+        /// the same `client_id`. Requires a non-empty `client_id`.
+        /// Default is `true`.
+        pub fn clean_session(mut self, clean: bool) -> Self {
+            self.clean_session = clean;
+            self
+        }
+
+        /// Set username and password credentials.
+        pub fn credentials(
+            mut self,
+            username: impl Into<String>,
+            password: impl Into<String>,
+        ) -> Self {
+            self.credentials = Some((username.into(), password.into()));
+            self
+        }
+
+        /// Set Last Will and Testament.
+        ///
+        /// The broker publishes this message if the client disconnects
+        /// unexpectedly. Build a `LastWill` using rumqttc directly:
+        ///
+        /// ```ignore
+        /// use rumqttc::{LastWill, QoS};
+        ///
+        /// MqttClient::builder()
+        ///     .url("localhost", 1883)
+        ///     .client_id("my-service")
+        ///     .last_will(LastWill::new(
+        ///         "devices/my-service/status",
+        ///         "offline",
+        ///         QoS::AtLeastOnce,
+        ///         true,
+        ///     ))
+        ///     .build();
+        /// ```
+        pub fn last_will(mut self, will: rumqttc::LastWill) -> Self {
+            self.last_will = Some(will);
+            self
+        }
+
+        /// Apply a custom modifier to the underlying `MqttOptions`.
+        ///
+        /// Use this for advanced configuration not exposed by the builder —
+        /// TLS, websockets, proxy settings etc.
+        ///
+        /// ```ignore
+        /// use rumqttc::Transport;
+        ///
+        /// MqttClient::builder()
+        ///     .url("localhost", 8883)
+        ///     .client_id("my-service")
+        ///     .with_options(|mut opts| {
+        ///         opts.set_transport(Transport::tls_with_config(tls_config.into()));
+        ///         opts
+        ///     })
+        ///     .build();
+        /// ```
+        pub fn with_options<F>(mut self, f: F) -> Self
+        where
+            F: FnOnce(MqttOptions) -> MqttOptions + 'static,
+        {
+            self.options_modifier = Some(Box::new(f));
+            self
+        }
+
         /// Build the client and event loop.
         ///
-        /// Returns `(MqttClient, EventLoop)`
+        /// Returns `(MqttClient, EventLoop)` — you own the event loop.
+        /// Poll it in your own task or loop.
         pub fn build(self) -> (MqttClient, EventLoop) {
             let mut options = MqttOptions::new(&self.client_id, &self.host, self.port);
             options.set_keep_alive(self.keep_alive);
+            options.set_clean_session(self.clean_session);
+
+            if let Some((username, password)) = self.credentials {
+                options.set_credentials(username, password);
+            }
+
+            if let Some(will) = self.last_will {
+                options.set_last_will(will);
+            }
+
+            if let Some(modifier) = self.options_modifier {
+                options = modifier(options);
+            }
 
             let (client, eventloop) = AsyncClient::new(options, self.channel_capacity);
             (MqttClient { inner: client }, eventloop)
@@ -96,6 +215,10 @@ mod mqtt_impl {
                 port: 1883,
                 keep_alive: Duration::from_secs(30),
                 channel_capacity: 10,
+                clean_session: true,
+                credentials: None,
+                last_will: None,
+                options_modifier: None,
             }
         }
 
