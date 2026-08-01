@@ -1,0 +1,54 @@
+title: "[RFC] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening an RFC, check existing discussions to avoid duplicates.
+        RFCs are for architectural decisions and major design proposals.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One paragraph explaining the proposal.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this needed? What problem does it solve? Link to relevant issues.
+    validations:
+      required: true
+
+  - type: textarea
+    id: design
+    attributes:
+      label: Design
+      description: The actual proposal. Include code examples where relevant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches were considered and why were they rejected?
+    validations:
+      required: true
+
+  - type: textarea
+    id: open_questions
+    attributes:
+      label: Open questions
+      description: Unresolved questions that need input from the community.
+      placeholder: |
+        - [ ] Question 1
+        - [ ] Question 2
+
+  - type: textarea
+    id: links
+    attributes:
+      label: Links
+      description: Relevant issues, PRs, external references.
