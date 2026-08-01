@@ -2,6 +2,7 @@ use crate::encoding::Encoding;
 use crate::error::TopikError;
 use crate::protocol::Protocol;
 use crate::subscribe::SubscribeBuilder;
+use bytes::Bytes;
 
 pub mod private {
     pub trait Sealed {}
@@ -81,6 +82,13 @@ pub trait TopicWire: Topic + private::Sealed {
     /// Returns a subscribe builder for this topic type.
     /// All dynamic segments start as wildcards.
     fn subscribe_builder() -> Self::SubscribeBuilder;
+
+    fn decode_payload(bytes: Bytes) -> Result<Self::Payload, TopikError>
+    where
+        Self: Sized,
+    {
+        Self::Encoding::decode(bytes)
+    }
 
     fn display<P: Protocol>(&self) -> TopicDisplay<'_, Self>
     where

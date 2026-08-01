@@ -44,7 +44,7 @@ mod subscriber;
 pub use client::TopikClient;
 pub use subscriber::Subscriber;
 pub use topik_core::{Topic, TopikError};
-pub use topik_macros::Topic;
+pub use topik_macros::{Topic, TopicEnum};
 
 pub mod encoding {
     pub use topik_core::{

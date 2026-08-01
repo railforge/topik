@@ -179,3 +179,60 @@ fn parse_segments(input: ParseStream) -> Result<Vec<SegmentKind>> {
 fn has_payload_attr(attrs: &[Attribute]) -> bool {
     attrs.iter().any(|a| a.path().is_ident("payload"))
 }
+
+pub struct TopicEnumInput {
+    pub name: Ident,
+    pub variants: Vec<TopicEnumVariant>,
+}
+
+pub struct TopicEnumVariant {
+    pub name: Ident,
+    pub topic_ty: Type,
+}
+
+pub fn parse_topic_enum_input(input: DeriveInput) -> Result<TopicEnumInput> {
+    let name = input.ident.clone();
+
+    let variants = match &input.data {
+        syn::Data::Enum(data) => &data.variants,
+        _ => {
+            return Err(Error::new_spanned(
+                &name,
+                "TopicEnum can only be derived on enums",
+            ));
+        }
+    };
+
+    let mut parsed_variants = Vec::new();
+
+    for variant in variants {
+        let topic_ty = match &variant.fields {
+            syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
+                fields.unnamed.first().unwrap().ty.clone()
+            }
+            _ => {
+                return Err(Error::new_spanned(
+                    &variant.ident,
+                    "TopicEnum variants must be tuple variants with exactly one field — e.g. Temperature(TemperatureReading)",
+                ));
+            }
+        };
+
+        parsed_variants.push(TopicEnumVariant {
+            name: variant.ident.clone(),
+            topic_ty,
+        });
+    }
+
+    if parsed_variants.is_empty() {
+        return Err(Error::new_spanned(
+            &name,
+            "TopicEnum must have at least one variant",
+        ));
+    }
+
+    Ok(TopicEnumInput {
+        name,
+        variants: parsed_variants,
+    })
+}

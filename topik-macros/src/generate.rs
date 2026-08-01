@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
-use crate::parse::{SegmentKind, TopicInput};
+use crate::parse::{SegmentKind, TopicEnumInput, TopicInput};
 
 pub fn generate(input: TopicInput) -> TokenStream {
     let name = &input.name;
@@ -199,6 +199,59 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 #builder_name {
                     #(#builder_default_fields,)*
                 }
+            }
+        }
+    }
+}
+
+pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
+    let name = &input.name;
+
+    let pattern_arms = input.variants.iter().map(|v| {
+        let ty = &v.topic_ty;
+        quote! {
+            <#ty as ::topik_core::__private::TopicWire>::wildcard_pattern(sep, single, multi)
+        }
+    });
+
+    let try_parse_arms = input.variants.iter().map(|v| {
+        let variant_name = &v.name;
+        let ty = &v.topic_ty;
+        quote! {
+            if let Ok(key) = <#ty as ::topik_core::__private::TopicWire>::parse(topic, sep) {
+                if let Ok(payload) = <#ty as ::topik_core::__private::TopicWire>::decode_payload(
+                    ::bytes::Bytes::copy_from_slice(payload_bytes)
+                ) {
+                    return Ok(#name::#variant_name(
+                        <#ty as ::topik_core::__private::TopicWire>::from_key_and_payload(key, payload)
+                    ));
+                }
+            }
+        }
+    });
+
+    quote! {
+        impl #name {
+            /// Returns all subscription patterns for this topic enum.
+            pub fn patterns(sep: char, single: &'static str, multi: &'static str) -> Vec<String> {
+                vec![
+                    #(#pattern_arms,)*
+                ]
+            }
+
+            /// Try to parse a raw topic and payload into one of the variants.
+            /// Returns the first matching variant.
+            pub fn try_parse(
+                topic: &str,
+                payload_bytes: &[u8],
+                sep: char,
+            ) -> Result<Self, ::topik_core::TopikError> {
+                #(#try_parse_arms)*
+
+                Err(::topik_core::TopikError::ParseError {
+                    topic: topic.to_string(),
+                    reason: "no variant matched".to_string(),
+                })
             }
         }
     }
