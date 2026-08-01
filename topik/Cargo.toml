@@ -1,20 +1,19 @@
 [package]
 name = "topik"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Typed pub/sub topics for Rust"
 license = "MIT"
 repository = "https://github.com/railforge/topik"
 
 [dependencies]
-topik-core = { version = "0.1.0", path = "../topik-core" }
-topik-macros = { version = "0.1.0", path = "../topik-macros" }
+topik-core = { version = "0.1", path = "../topik-core" }
+topik-macros = { version = "0.1", path = "../topik-macros" }
 bytes = "1"
 tokio = { version = "1", features = ["sync", "rt"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "sync"] }
-
 
 [features]
 default = []
