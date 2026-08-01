@@ -1,6 +1,6 @@
 [package]
 name = "topik-macros"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2024"
 description = "Proc macros for topik"
 license = "MIT"
@@ -15,4 +15,4 @@ bytes = "1"
 syn = { version = "3", features = ["full"] }
 quote = "1"
 proc-macro2 = "1"
-topik-core = { version = "0.1", path = "../topik-core" }
+topik-core = { version = "0.2", path = "../topik-core" }

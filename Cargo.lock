@@ -2047,7 +2047,7 @@ dependencies = [
 
 [[package]]
 name = "topik"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "rumqttc",
@@ -2060,7 +2060,7 @@ dependencies = [
 
 [[package]]
 name = "topik-core"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "thiserror",
@@ -2069,7 +2069,7 @@ dependencies = [
 
 [[package]]
 name = "topik-macros"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "proc-macro2",
