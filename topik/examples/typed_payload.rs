@@ -4,13 +4,7 @@
 //!   cargo run --example typed_payload
 
 use bytes::Bytes;
-use topik::encoding::{
-    BoolEncoding, F32Encoding, I32Encoding, RawEncoding, StringEncoding, U64Encoding,
-};
-use topik::protocol::Mqtt;
-use topik::segment::OneZero;
-use topik::transport::InMemoryTransport;
-use topik::{Topic, TopikClient};
+use topik::prelude::*;
 
 // float payload
 #[derive(Topic, Debug)]

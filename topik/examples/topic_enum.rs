@@ -8,10 +8,7 @@
 //!   cargo run --example topic_enum
 
 use bytes::Bytes;
-use topik::encoding::{F32Encoding, RawEncoding};
-use topik::protocol::Mqtt;
-use topik::transport::InMemoryTransport;
-use topik::{Topic, TopicEnum, TopikClient};
+use topik::prelude::*;
 
 #[derive(Topic, Debug)]
 #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]

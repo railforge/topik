@@ -11,8 +11,7 @@
 #[cfg(feature = "mqtt")]
 mod example {
     use rumqttc::{Event, Packet, QoS};
-    use topik::encoding::F32Encoding;
-    use topik::{MqttClient, Topic, TopicEnum};
+    use topik::prelude::*;
 
     #[derive(Topic, Debug)]
     #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]

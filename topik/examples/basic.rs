@@ -4,10 +4,7 @@
 //!   cargo run --example basic
 
 use bytes::Bytes;
-use topik::encoding::RawEncoding;
-use topik::protocol::Mqtt;
-use topik::transport::InMemoryTransport;
-use topik::{Topic, TopikClient};
+use topik::prelude::*;
 
 /// A temperature reading from a sensor device.
 ///
