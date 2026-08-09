@@ -66,6 +66,16 @@ mod example {
 
         // Subscribing
         sub_client.subscribe_many::<SensorTopics>().await.unwrap();
+
+        // wait for broker to ack
+        for _ in 0..SensorTopics::patterns('/', "+", "#").len() {
+            loop {
+                if let Event::Incoming(Packet::SubAck(_)) = eventloop.poll().await.unwrap() {
+                    break;
+                }
+            }
+        }
+
         println!("Subscribed to:");
         for pattern in SensorTopics::patterns('/', "+", "#") {
             println!("  {}", pattern);
