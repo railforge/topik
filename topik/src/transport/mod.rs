@@ -1,5 +1,4 @@
 mod inmemory;
-mod matching;
 
 #[cfg(feature = "mqtt")]
 mod mqtt;
