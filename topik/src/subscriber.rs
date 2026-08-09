@@ -4,7 +4,7 @@ use topik_core::__private::{MessageStream, TopicEnum, TopicWire, Transport};
 use topik_core::protocol::Protocol;
 use topik_core::{Encoding, TopikError};
 
-/// A typed subscriber for a specific topic type.
+/// A typed subscriber for a topik type.
 ///
 /// Returned by [`TopikClient::subscribe`]. Receives messages from the broker,
 /// parses the topic string, and decodes the payload automatically.
@@ -30,9 +30,8 @@ pub struct Subscriber<T: Transport + Clone, M: TopicWire> {
 impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
     /// Wait for the next typed message from the broker.
     ///
-    /// Parses the topic string and decodes the payload automatically.
-    /// Silently skips messages that fail to parse or decode. These are
-    /// likely from legacy publishers on the same topic pattern.
+    /// Parses the topic string and decodes the payload.
+    /// Messages that cannot be parsed or decoded are skipped.
     ///
     /// Returns `None` when the stream is closed.
     pub async fn next(&mut self) -> Option<M> {
@@ -53,11 +52,10 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
         }
     }
 
-    /// Explicitly unsubscribe from the topic pattern.
+    /// Unsubscribe from the topic pattern.
     ///
-    /// Consumes the subscriber. Cannot be used after unsubscribing.
-    /// If you drop the subscriber without calling this, the subscription
-    /// may remain active until the connection closes.
+    /// Explicitly cancel the subscription and release resources.
+    /// Consumes the subscriber.
     pub async fn unsubscribe(self) -> Result<(), TopikError> {
         self.transport.unsubscribe(self.pattern).await
     }
@@ -67,8 +65,8 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
     /// ```ignore
     /// let sub = client.subscribe::<TemperatureReading>().await?;
     /// println!("{}", sub.pattern());
-    /// // MQTT → "sensors/+/temperature"
-    /// // NATS → "sensors.*.temperature"
+    /// // MQTT -> "sensors/+/temperature"
+    /// // NATS -> "sensors.*.temperature"
     /// ```
     pub fn pattern(&self) -> &str {
         &self.pattern
@@ -77,13 +75,9 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
 
 /// A typed subscriber for a group of topic types defined by a [`TopicEnum`].
 ///
-/// Returned by [`TopikClient::subscribe_many`]. Receives messages from all
-/// topic patterns covered by the enum and dispatches them as typed enum
-/// variants through a single channel.
-///
-/// Internally each topic pattern gets its own task that forwards decoded
-/// messages into a shared `mpsc` channel. This means all topic streams
-/// are polled concurrently — no one stream blocks another.
+/// Returned by [`TopikClient::subscribe_many`]. Only messages matching the
+/// enum's patterns are delivered, fully decoded into typed variants before
+/// reaching the caller.
 ///
 /// # Example
 ///
@@ -96,27 +90,6 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
 ///         SensorTopics::Humidity(msg) => println!("{}%", msg.data),
 ///         SensorTopics::Reboot(msg) => println!("reboot {}", msg.device_id),
 ///     }
-/// }
-/// ```
-///
-/// # In-process pub/sub
-///
-/// `EnumSubscriber` with [`InMemoryTransport`] works as a typed in-process
-/// event bus — no broker needed, same API as production:
-///
-/// ```ignore
-/// let transport = InMemoryTransport::<Mqtt>::new();
-///
-/// let producer = TopikClient::new(transport.clone());
-/// let consumer = TopikClient::new(transport.clone());
-///
-/// tokio::spawn(async move {
-///     producer.publish(TemperatureReading { device_id: 1, data: 23.5 }).await?;
-/// });
-///
-/// let mut sub = consumer.subscribe_many::<SensorTopics>().await?;
-/// while let Some(event) = sub.next().await {
-///     match event { ... }
 /// }
 /// ```
 pub struct EnumSubscriber<E: TopicEnum> {

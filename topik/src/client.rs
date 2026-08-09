@@ -7,12 +7,13 @@ use topik_core::{Encoding, TopikError};
 
 use crate::subscriber::{EnumSubscriber, Subscriber};
 
-/// The main entry point for typed pub/sub messaging.
+/// Topik's typed client. A thin wrapper around a pub/sub transport.
 ///
-/// `TopikClient` wraps a [`Transport`] and provides a typed API for
-/// publishing and subscribing to topics defined with `#[derive(Topic)]`.
+/// `TopikClient` sits in front of any [`Transport`] implementation and adds
+/// compile-time type safety for topic definitions, payload encoding, and
+/// subscription patterns. The underlying protocol client is provided by the transport.
 ///
-/// The protocol is determined by the transport's associated `Protocol` type.
+/// The protocol is inferred from the transport's associated [`Protocol`] type.
 ///
 /// # Example
 ///
@@ -35,7 +36,7 @@ pub struct TopikClient<T: Transport> {
 }
 
 impl<T: Transport> TopikClient<T> {
-    /// Create a new client wrapping the given transport.
+    /// Wrap a transport in a typed topik client.
     pub fn new(transport: T) -> Self {
         TopikClient { transport }
     }
@@ -78,8 +79,7 @@ impl<T: Transport> TopikClient<T> {
     /// Subscribe to all topics covered by a [`TopicEnum`].
     ///
     /// Returns an [`EnumSubscriber`] that yields typed enum variants
-    /// as messages arrive. Each topic pattern in the enum gets its own
-    /// concurrent stream.
+    /// as messages arrive. All patterns in the enum are subscribed to concurrently.
     ///
     /// # Example
     ///
