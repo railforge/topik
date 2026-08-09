@@ -100,27 +100,24 @@ mod example {
         let mut received = 0;
         println!("\nReceived messages:");
         while received < 2 {
-            match eventloop.poll().await.unwrap() {
-                Event::Incoming(Packet::Publish(p)) => {
-                    match sub_client.parse::<SensorTopics>(&p.topic, &p.payload) {
-                        Ok(SensorTopics::Temperature(msg)) => {
-                            println!(
-                                "  Temperature → device {} sent {:.1}°C",
-                                msg.device_id, msg.data
-                            );
-                            received += 1;
-                        }
-                        Ok(SensorTopics::Humidity(msg)) => {
-                            println!(
-                                "  Humidity    → device {} sent {:.1}%",
-                                msg.device_id, msg.data
-                            );
-                            received += 1;
-                        }
-                        Err(_) => {}
+            if let Event::Incoming(Packet::Publish(p)) = eventloop.poll().await.unwrap() {
+                match sub_client.parse::<SensorTopics>(&p.topic, &p.payload) {
+                    Ok(SensorTopics::Temperature(msg)) => {
+                        println!(
+                            "  Temperature → device {} sent {:.1}°C",
+                            msg.device_id, msg.data
+                        );
+                        received += 1;
                     }
+                    Ok(SensorTopics::Humidity(msg)) => {
+                        println!(
+                            "  Humidity    → device {} sent {:.1}%",
+                            msg.device_id, msg.data
+                        );
+                        received += 1;
+                    }
+                    Err(_) => {}
                 }
-                _ => {}
             }
         }
 
@@ -133,22 +130,17 @@ mod example {
         pub_client.publish(reading3).await.unwrap();
 
         loop {
-            match eventloop.poll().await.unwrap() {
-                Event::Incoming(Packet::Publish(p)) => {
-                    if let Some(msg) = sub_client
-                        .parse_topic::<TemperatureReading>(&p.topic, &p.payload)
-                        .unwrap()
-                    {
-                        if msg.device_id == 99 {
-                            println!(
-                                "parse_topic → device {} sent {:.1}°C",
-                                msg.device_id, msg.data
-                            );
-                            break;
-                        }
-                    }
-                }
-                _ => {}
+            if let Event::Incoming(Packet::Publish(p)) = eventloop.poll().await.unwrap()
+                && let Some(msg) = sub_client
+                    .parse_topic::<TemperatureReading>(&p.topic, &p.payload)
+                    .unwrap()
+                && msg.device_id == 99
+            {
+                println!(
+                    "parse_topic → device {} sent {:.1}°C",
+                    msg.device_id, msg.data
+                );
+                break;
             }
         }
     }

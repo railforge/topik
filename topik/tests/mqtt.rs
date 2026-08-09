@@ -27,9 +27,8 @@ async fn broker() -> (String, u16) {
 async fn wait_for_suback(eventloop: &mut rumqttc::EventLoop) {
     tokio::time::timeout(std::time::Duration::from_secs(5), async {
         loop {
-            match eventloop.poll().await.unwrap() {
-                Event::Incoming(Packet::SubAck(_)) => break,
-                _ => {}
+            if let Event::Incoming(Packet::SubAck(_)) = eventloop.poll().await.unwrap() {
+                break;
             }
         }
     })
@@ -107,18 +106,14 @@ async fn publish_and_parse() {
 
     tokio::time::timeout(std::time::Duration::from_secs(10), async {
         loop {
-            match eventloop.poll().await.unwrap() {
-                Event::Incoming(Packet::Publish(p)) => {
-                    if let Some(msg) = sub_client
-                        .parse_topic::<T1Temperature>(&p.topic, &p.payload)
-                        .unwrap()
-                    {
-                        assert_eq!(msg.device_id, 1);
-                        assert!((msg.data - 23.5).abs() < f32::EPSILON);
-                        break;
-                    }
-                }
-                _ => {}
+            if let Event::Incoming(Packet::Publish(p)) = eventloop.poll().await.unwrap()
+                && let Some(msg) = sub_client
+                    .parse_topic::<T1Temperature>(&p.topic, &p.payload)
+                    .unwrap()
+            {
+                assert_eq!(msg.device_id, 1);
+                assert!((msg.data - 23.5).abs() < f32::EPSILON);
+                break;
             }
         }
     })
@@ -167,16 +162,13 @@ async fn subscribe_many_and_parse_enum() {
     let mut received = Vec::new();
     tokio::time::timeout(std::time::Duration::from_secs(10), async {
         loop {
-            match eventloop.poll().await.unwrap() {
-                Event::Incoming(Packet::Publish(p)) => {
-                    if let Ok(event) = sub_client.parse::<T2Topics>(&p.topic, &p.payload) {
-                        received.push(event);
-                        if received.len() == 2 {
-                            break;
-                        }
-                    }
+            if let Event::Incoming(Packet::Publish(p)) = eventloop.poll().await.unwrap()
+                && let Ok(event) = sub_client.parse::<T2Topics>(&p.topic, &p.payload)
+            {
+                received.push(event);
+                if received.len() == 2 {
+                    break;
                 }
-                _ => {}
             }
         }
     })
@@ -218,19 +210,15 @@ async fn publish_with_qos_and_retain() {
 
     tokio::time::timeout(std::time::Duration::from_secs(10), async {
         loop {
-            match eventloop.poll().await.unwrap() {
-                Event::Incoming(Packet::Publish(p)) => {
-                    if let Some(msg) = sub_client
-                        .parse_topic::<T3Temperature>(&p.topic, &p.payload)
-                        .unwrap()
-                    {
-                        assert_eq!(msg.device_id, 1);
-                        assert!((msg.data - 23.5).abs() < f32::EPSILON);
-                        assert_eq!(p.qos, QoS::AtMostOnce);
-                        break;
-                    }
-                }
-                _ => {}
+            if let Event::Incoming(Packet::Publish(p)) = eventloop.poll().await.unwrap()
+                && let Some(msg) = sub_client
+                    .parse_topic::<T3Temperature>(&p.topic, &p.payload)
+                    .unwrap()
+            {
+                assert_eq!(msg.device_id, 1);
+                assert!((msg.data - 23.5).abs() < f32::EPSILON);
+                assert_eq!(p.qos, QoS::AtMostOnce);
+                break;
             }
         }
     })
