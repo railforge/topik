@@ -1,4 +1,4 @@
-#![cfg(feature = "mqtt")]
+#![cfg(feature = "rumqttc")]
 
 use rumqttc::{Event, Packet, QoS};
 use testcontainers_modules::{mosquitto::Mosquitto, testcontainers::runners::AsyncRunner};

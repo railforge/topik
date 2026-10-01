@@ -8,7 +8,7 @@
 //! Run with:
 //!   cargo run --example mqtt --features mqtt
 
-#[cfg(feature = "mqtt")]
+#[cfg(feature = "rumqttc")]
 mod example {
     use rumqttc::{Event, Packet, QoS};
     use topik::prelude::*;
@@ -157,9 +157,9 @@ mod example {
 
 #[tokio::main]
 async fn main() {
-    #[cfg(feature = "mqtt")]
+    #[cfg(feature = "rumqttc")]
     example::run().await;
 
-    #[cfg(not(feature = "mqtt"))]
+    #[cfg(not(feature = "rumqttc"))]
     println!("Run with --features mqtt to enable this example.");
 }

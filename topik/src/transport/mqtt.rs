@@ -1,4 +1,4 @@
-#[cfg(feature = "mqtt")]
+#[cfg(feature = "rumqttc")]
 mod mqtt_impl {
     use bytes::Bytes;
     use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
@@ -385,5 +385,5 @@ mod mqtt_impl {
     }
 }
 
-#[cfg(feature = "mqtt")]
+#[cfg(feature = "rumqttc")]
 pub use mqtt_impl::{MqttClient, MqttClientBuilder, MqttPublishBuilder};

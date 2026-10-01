@@ -74,7 +74,7 @@ pub mod prelude {
     pub use topik_core::{Topic, TopicEnum, TopikError};
     pub use topik_macros::{Topic, TopicEnum};
 
-    #[cfg(feature = "mqtt")]
+    #[cfg(feature = "rumqttc")]
     pub use crate::transport::{MqttClient, MqttClientBuilder, MqttPublishBuilder};
 }
 
@@ -98,7 +98,7 @@ pub mod protocol {
 
 pub mod transport;
 
-#[cfg(feature = "mqtt")]
+#[cfg(feature = "rumqttc")]
 pub use transport::{MqttClient, MqttClientBuilder, MqttPublishBuilder};
 
 #[doc(hidden)]

@@ -191,6 +191,7 @@ impl<'a, T: Transport + Clone, M: TopicWire> IntoFuture for TopikSubscribeBuilde
                 .inner
                 .build_pattern(T::Protocol::SEPARATOR, T::Protocol::SINGLE_WILDCARD);
             let stream = self.client.transport.subscribe(pattern.clone()).await?;
+
             Ok(Subscriber {
                 stream,
                 pattern,

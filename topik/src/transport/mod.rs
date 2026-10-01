@@ -1,10 +1,10 @@
 mod inmemory;
 
-#[cfg(feature = "mqtt")]
+#[cfg(feature = "rumqttc")]
 mod mqtt;
 
 pub use self::inmemory::InMemoryTransport;
 pub use topik_core::transport::{MessageStream, RawMessage, Transport};
 
-#[cfg(feature = "mqtt")]
+#[cfg(feature = "rumqttc")]
 pub use self::mqtt::{MqttClient, MqttClientBuilder, MqttPublishBuilder};
