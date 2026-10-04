@@ -32,13 +32,37 @@ use crate::subscriber::{EnumSubscriber, Subscriber};
 /// }
 /// ```
 pub struct TopikClient<T: Transport> {
-    pub(crate) transport: T,
+    transport: T,
 }
 
 impl<T: Transport> TopikClient<T> {
     /// Wrap a transport in a typed topik client.
     pub fn new(transport: T) -> Self {
         TopikClient { transport }
+    }
+
+    /// Returns the subscription pattern for a single topic type, using this client's protocol.
+    ///
+    /// ```ignore
+    /// println!("{}", client.pattern::<TemperatureReading>());
+    /// // MQTT -> "sensors/+/temperature"
+    /// // NATS -> "sensors.*.temperature"
+    /// ```
+    pub fn pattern<M: TopicWire>(&self) -> String {
+        M::wildcard_pattern_for::<T::Protocol>()
+    }
+
+    /// Returns all subscription patterns this enum covers, using this client's protocol.
+    ///
+    /// Useful for logging or passing patterns to external systems.
+    ///
+    /// ```ignore
+    /// for pattern in client.patterns::<SensorTopics>() {
+    ///     println!("{}", pattern);
+    /// }
+    /// ```
+    pub fn patterns<E: TopicEnum>(&self) -> Vec<String> {
+        E::patterns_for::<T::Protocol>()
     }
 
     /// Publish a typed topic message.

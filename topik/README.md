@@ -69,8 +69,13 @@ let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
 Swap the transport to connect to a real broker. The rest of your code stays the same:
 
 ```rust
-// coming in v0.2.0
-let client = TopikClient::new(MqttTransport::new("mqtt://localhost:1883").await?);
+let client = TopikClient::new(
+    MqttTransport::builder()
+        .url("localhost", 1883)
+        .client_id("my-service")
+        .build()
+        .await?,
+);
 ```
 
 Use `InMemoryTransport` in tests. No broker needed.
@@ -173,6 +178,67 @@ while let Some(event) = sub.next().await {
 }
 ```
 
+## MQTT
+
+Connect to a real broker with `MqttTransport`. The event loop runs in a background task:
+
+```rust
+use topik::prelude::*;
+
+let client = TopikClient::new(
+    MqttTransport::builder()
+        .url("localhost", 1883)
+        .client_id("my-service")
+        .build()
+        .await?,
+);
+
+client.publish(TemperatureReading { device_id: 42, data: 23.5 }).await?;
+
+let mut sub = client.subscribe_many::<SensorTopics>().await?;
+while let Some(event) = sub.next().await {
+    match event { ... }
+}
+```
+
+### Direct rumqttc access
+
+For features outside the typed API (e.g., custom QoS per publish, retained messages, LWT, TLS) use `MqttClient` from the escape hatch module:
+
+```rust
+use rumqttc::{Event, Packet, QoS};
+use topik::transport::rumqttc::MqttClient;
+
+let (client, mut eventloop) = MqttClient::builder()
+    .url("localhost", 1883)
+    .client_id("my-service")
+    .build();
+
+// subscribe and wait for the broker to ack before receiving
+client.subscribe_many::<SensorTopics>().await?;
+for _ in 0..client.patterns::<SensorTopics>().len() {
+    loop {
+        if let Event::Incoming(Packet::SubAck(_)) = eventloop.poll().await? {
+            break;
+        }
+    }
+}
+
+// receive and dispatch
+while let Ok(Event::Incoming(Packet::Publish(p))) = eventloop.poll().await {
+    match client.parse::<SensorTopics>(&p.topic, &p.payload)? {
+        SensorTopics::Temperature(msg) => println!("{}°C", msg.data),
+        SensorTopics::Humidity(msg) => println!("{}%", msg.data),
+    }
+}
+
+// publish with per-message QoS and retain
+client.publish(TemperatureReading { device_id: 42, data: 23.5 })
+    .qos(QoS::AtMostOnce)
+    .retain(true)
+    .await?;
+```
+
 ## Defining topics
 
 A topic is a Rust struct with `#[derive(Topic)]`.
@@ -272,7 +338,7 @@ Each step is independent. No big rewrites. The compiler tracks your progress.
 - [x] `TopicEnum` for grouping multiple topic types
 - [x] `subscribe_many`: unified subscription over multiple topic types
 - [x] `MqttClient` Mode 1: typed topics on real MQTT broker (rumqttc)
-- [ ] `MqttClient` Mode 2: managed stream, no event loop boilerplate
+- [x] `MqttClient` Mode 2: managed stream, no event loop boilerplate
 - [ ] `NatsClient`: NATS support
 - [ ] `JsonEncoding`: serde JSON payloads
 - [ ] `ProtobufEncoding`: prost protobuf payloads
@@ -285,7 +351,8 @@ Each step is independent. No big rewrites. The compiler tracks your progress.
 cargo run --example basic          # publish, subscribe, wildcard matching
 cargo run --example typed_payload  # numeric and float payloads
 cargo run --example topic_enum     # multiple topic types with subscribe_many
-cargo run --example mqtt --features mqtt  # real MQTT broker
+cargo run --example mqtt --features rumqttc          # real MQTT broker, typed API
+cargo run --example mqtt_raw --features rumqttc      # direct rumqttc access
 ```
 
 See [`topik/examples/`](topik/examples/) for the full source.

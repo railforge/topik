@@ -75,7 +75,7 @@ pub mod prelude {
     pub use topik_macros::{Topic, TopicEnum};
 
     #[cfg(feature = "rumqttc")]
-    pub use crate::transport::{MqttClient, MqttClientBuilder, MqttPublishBuilder};
+    pub use crate::transport::{MqttTransport, MqttTransportBuilder};
 }
 
 pub mod encoding {
@@ -99,7 +99,7 @@ pub mod protocol {
 pub mod transport;
 
 #[cfg(feature = "rumqttc")]
-pub use transport::{MqttClient, MqttClientBuilder, MqttPublishBuilder};
+pub use transport::{MqttTransport, MqttTransportBuilder};
 
 #[doc(hidden)]
 pub mod __private {

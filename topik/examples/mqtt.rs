@@ -1,16 +1,17 @@
 //! MQTT example: typed topics with a real MQTT broker.
 //!
+//! Connects via the default [`MqttTransport`].
+//!
 //! Requires a running MQTT broker on localhost:1883.
 //!
 //! Start one with Docker:
 //!   docker run -it -p 1883:1883 eclipse-mosquitto
 //!
 //! Run with:
-//!   cargo run --example mqtt --features mqtt
+//!   cargo run --example mqtt --features rumqttc
 
 #[cfg(feature = "rumqttc")]
 mod example {
-    use rumqttc::{Event, Packet, QoS};
     use topik::prelude::*;
 
     #[derive(Topic, Debug)]
@@ -36,120 +37,81 @@ mod example {
     }
 
     pub async fn run() {
-        // Two clients (MQTT requires unique client_id per connection)
-        // Full builder options shown here (uncomment as needed)
-        let (sub_client, mut eventloop) = MqttClient::builder()
-            .url("localhost", 1883)
-            .client_id("topik-example-sub")
-            .keep_alive(30)
-            .clean_session(true)
-            // .credentials("user", "password")
-            // .last_will(rumqttc::LastWill::new(
-            //     "devices/topik-example-sub/status",
-            //     "offline",
-            //     rumqttc::QoS::AtLeastOnce,
-            //     true,
-            // ))
-            // .with_options(|mut opts| {
-            //     // TLS, websockets, proxy etc
-            //     opts
-            // })
-            .build();
+        // Each connection needs a unique client_id.
+        // The event loop runs in a background task.
+        let sub = TopikClient::new(
+            MqttTransport::builder()
+                .url("localhost", 1883)
+                .client_id("topik-example-sub")
+                .build()
+                .await
+                .unwrap(),
+        );
 
-        let (pub_client, mut pub_eventloop) = MqttClient::builder()
-            .url("localhost", 1883)
-            .client_id("topik-example-pub")
-            .build();
+        let pub_client = TopikClient::new(
+            MqttTransport::builder()
+                .url("localhost", 1883)
+                .client_id("topik-example-pub")
+                .build()
+                .await
+                .unwrap(),
+        );
 
-        // poll publisher event loop in background
-        tokio::spawn(async move { while pub_eventloop.poll().await.is_ok() {} });
-
-        // Subscribing
-        sub_client.subscribe_many::<SensorTopics>().await.unwrap();
-
-        // wait for broker to ack
-        for _ in 0..SensorTopics::patterns('/', "+", "#").len() {
-            loop {
-                if let Event::Incoming(Packet::SubAck(_)) = eventloop.poll().await.unwrap() {
-                    break;
-                }
-            }
-        }
+        // Subscribe to all topics covered by the enum.
+        let mut stream = sub.subscribe_many::<SensorTopics>().await.unwrap();
 
         println!("Subscribed to:");
-        for pattern in SensorTopics::patterns('/', "+", "#") {
+        for pattern in sub.patterns::<SensorTopics>() {
             println!("  {}", pattern);
         }
 
-        // Publishing with display
-        let reading1 = TemperatureReading {
-            device_id: 42,
-            data: 23.5,
-        };
-        println!("\nPublishing to: {}", pub_client.display(&reading1));
-        pub_client.publish(reading1).await.unwrap();
-
-        // publish with explicit QoS and retain chained
-        let reading2 = HumidityReading {
-            device_id: 42,
-            data: 65.0,
-        };
+        // Publish typed messages.
         println!(
-            "Publishing to: {} (QoS::AtLeastOnce, retain=false)",
-            pub_client.display(&reading2)
+            "\nPublishing to: {}",
+            pub_client.display(&TemperatureReading {
+                device_id: 42,
+                data: 23.5
+            })
         );
         pub_client
-            .publish(reading2)
-            .qos(QoS::AtLeastOnce)
-            .retain(false)
+            .publish(TemperatureReading {
+                device_id: 42,
+                data: 23.5,
+            })
             .await
             .unwrap();
 
-        // Receiving with parse
-        let mut received = 0;
+        println!(
+            "Publishing to: {}",
+            pub_client.display(&HumidityReading {
+                device_id: 42,
+                data: 65.0
+            })
+        );
+        pub_client
+            .publish(HumidityReading {
+                device_id: 42,
+                data: 65.0,
+            })
+            .await
+            .unwrap();
+
+        // Receive and dispatch
         println!("\nReceived messages:");
-        while received < 2 {
-            if let Event::Incoming(Packet::Publish(p)) = eventloop.poll().await.unwrap() {
-                match sub_client.parse::<SensorTopics>(&p.topic, &p.payload) {
-                    Ok(SensorTopics::Temperature(msg)) => {
-                        println!(
-                            "  Temperature -> device {} sent {:.1}°C",
-                            msg.device_id, msg.data
-                        );
-                        received += 1;
-                    }
-                    Ok(SensorTopics::Humidity(msg)) => {
-                        println!(
-                            "  Humidity -> device {} sent {:.1}%",
-                            msg.device_id, msg.data
-                        );
-                        received += 1;
-                    }
-                    Err(_) => {}
+        for _ in 0..2 {
+            match stream.next().await.unwrap() {
+                SensorTopics::Temperature(msg) => {
+                    println!(
+                        "  Temperature -> device {} sent {:.1}°C",
+                        msg.device_id, msg.data
+                    );
                 }
-            }
-        }
-
-        // parse_topic for a single topic type
-        let reading3 = TemperatureReading {
-            device_id: 99,
-            data: 18.0,
-        };
-        println!("\nPublishing to: {}", pub_client.display(&reading3));
-        pub_client.publish(reading3).await.unwrap();
-
-        loop {
-            if let Event::Incoming(Packet::Publish(p)) = eventloop.poll().await.unwrap()
-                && let Some(msg) = sub_client
-                    .parse_topic::<TemperatureReading>(&p.topic, &p.payload)
-                    .unwrap()
-                && msg.device_id == 99
-            {
-                println!(
-                    "parse_topic -> device {} sent {:.1}°C",
-                    msg.device_id, msg.data
-                );
-                break;
+                SensorTopics::Humidity(msg) => {
+                    println!(
+                        "  Humidity    -> device {} sent {:.1}%",
+                        msg.device_id, msg.data
+                    );
+                }
             }
         }
     }
@@ -161,5 +123,5 @@ async fn main() {
     example::run().await;
 
     #[cfg(not(feature = "rumqttc"))]
-    println!("Run with --features mqtt to enable this example.");
+    println!("Run with --features rumqttc to enable this example.");
 }

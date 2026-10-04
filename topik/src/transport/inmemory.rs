@@ -77,7 +77,13 @@ const CHANNEL_CAPACITY: usize = 1024;
 // Wildcard matching
 
 /// Match a concrete topic string against a subscription pattern.
-fn matches_pattern(topic: &str, pattern: &str, sep: char, single: &str, multi: &str) -> bool {
+pub(crate) fn matches_pattern(
+    topic: &str,
+    pattern: &str,
+    sep: char,
+    single: &str,
+    multi: &str,
+) -> bool {
     // fast path (exact match)
     if topic == pattern {
         return true;
