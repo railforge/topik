@@ -7,7 +7,6 @@ pub struct TopicInput {
     pub name: Ident,
     pub segments: Vec<SegmentKind>,
     pub payload: PayloadField,
-    pub encoding: Path,
     pub fields: Vec<TopicField>,
 }
 
@@ -21,6 +20,7 @@ pub enum SegmentKind {
 pub struct PayloadField {
     pub name: Ident,
     pub ty: Type,
+    pub encoding: Path,
 }
 
 /// A non-payload field.
@@ -56,14 +56,6 @@ pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
         .segments
         .ok_or_else(|| Error::new_spanned(&name, "missing #[topic(segments(...))] attribute"))?;
 
-    // encoding is required
-    let encoding = topic_attrs.encoding.ok_or_else(|| {
-        Error::new_spanned(
-            &name,
-            "missing encoding. Add #[topic(encoding = YourEncoding)] to your struct",
-        )
-    })?;
-
     let mut payload: Option<PayloadField> = None;
     let mut topic_fields: Vec<TopicField> = Vec::new();
 
@@ -73,20 +65,24 @@ pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
             .clone()
             .ok_or_else(|| Error::new_spanned(field, "Topic fields must be named"))?;
 
-        match (has_payload_attr(&field.attrs), payload.is_some()) {
-            (true, true) => {
+        match (
+            parse_payload_attr(&field.attrs, &field.ty, field)?,
+            payload.is_some(),
+        ) {
+            (Some(_), true) => {
                 return Err(Error::new_spanned(
                     field,
                     "only one field can be marked #[payload]",
                 ));
             }
-            (true, false) => {
+            (Some(encoding), false) => {
                 payload = Some(PayloadField {
                     name: field_name,
                     ty: field.ty.clone(),
+                    encoding,
                 })
             }
-            (false, _) => topic_fields.push(TopicField {
+            (None, _) => topic_fields.push(TopicField {
                 name: field_name,
                 ty: field.ty.clone(),
             }),
@@ -112,19 +108,16 @@ pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
         name,
         segments,
         payload,
-        encoding,
         fields: topic_fields,
     })
 }
 
 struct TopicAttrs {
     segments: Option<Vec<SegmentKind>>,
-    encoding: Option<Path>,
 }
 
 fn parse_topic_attrs(attrs: &[Attribute], _span: &Ident) -> Result<TopicAttrs> {
     let mut segments: Option<Vec<SegmentKind>> = None;
-    let mut encoding: Option<Path> = None;
 
     for attr in attrs {
         if !attr.path().is_ident("topic") {
@@ -137,17 +130,75 @@ fn parse_topic_attrs(attrs: &[Attribute], _span: &Ident) -> Result<TopicAttrs> {
                 syn::parenthesized!(content in meta.input);
                 segments = Some(parse_segments(&content)?);
                 Ok(())
-            } else if meta.path.is_ident("encoding") {
-                meta.input.parse::<syn::Token![=]>()?;
-                encoding = Some(meta.input.parse::<Path>()?);
-                Ok(())
             } else {
-                Err(meta.error("unknown topic attribute. Expected segments(...) or encoding = ..."))
+                Err(meta.error("unknown topic attribute. Expected segments(...)"))
             }
         })?;
     }
 
-    Ok(TopicAttrs { segments, encoding })
+    Ok(TopicAttrs { segments })
+}
+
+const ENCODING_MAP: &[(&str, &str)] = &[
+    ("f32", "F32Encoding"),
+    ("f64", "F64Encoding"),
+    ("u8", "U8Encoding"),
+    ("u16", "U16Encoding"),
+    ("u32", "U32Encoding"),
+    ("u64", "U64Encoding"),
+    ("i32", "I32Encoding"),
+    ("i64", "I64Encoding"),
+    ("String", "StringEncoding"),
+    ("bool", "BoolEncoding<TrueFalse>"),
+    ("Bytes", "RawEncoding"),
+];
+
+fn infer_encoding(ty: &Type) -> Option<Path> {
+    let path = match ty {
+        Type::Path(tp) => &tp.path,
+        _ => return None,
+    };
+    let ident = path.segments.last()?.ident.to_string();
+    let encoding_str = ENCODING_MAP
+        .iter()
+        .find(|(t, _)| *t == ident.as_str())
+        .map(|(_, e)| *e)?;
+    syn::parse_str(encoding_str).ok()
+}
+
+fn parse_payload_attr(
+    attrs: &[Attribute],
+    field_ty: &Type,
+    field: &syn::Field,
+) -> Result<Option<Path>> {
+    for attr in attrs {
+        if !attr.path().is_ident("payload") {
+            continue;
+        }
+        let mut encoding: Option<Path> = None;
+        if attr.meta.require_list().is_ok() {
+            attr.parse_nested_meta(|meta| {
+                if meta.path.is_ident("encoding") {
+                    meta.input.parse::<syn::Token![=]>()?;
+                    encoding = Some(meta.input.parse::<Path>()?);
+                    Ok(())
+                } else {
+                    Err(meta.error("unknown payload attribute. Expected encoding = ..."))
+                }
+            })?;
+        }
+        let encoding = match encoding {
+            Some(e) => e,
+            None => infer_encoding(field_ty).ok_or_else(|| {
+                Error::new_spanned(
+                    field,
+                    "cannot infer encoding for this type. Use #[payload(encoding = YourEncoding)]",
+                )
+            })?,
+        };
+        return Ok(Some(encoding));
+    }
+    Ok(None)
 }
 
 fn parse_segments(input: ParseStream) -> Result<Vec<SegmentKind>> {
@@ -174,10 +225,6 @@ fn parse_segments(input: ParseStream) -> Result<Vec<SegmentKind>> {
     }
 
     Ok(segments)
-}
-
-fn has_payload_attr(attrs: &[Attribute]) -> bool {
-    attrs.iter().any(|a| a.path().is_ident("payload"))
 }
 
 pub struct TopicEnumInput {
@@ -213,7 +260,7 @@ pub fn parse_topic_enum_input(input: DeriveInput) -> Result<TopicEnumInput> {
             _ => {
                 return Err(Error::new_spanned(
                     &variant.ident,
-                    "TopicEnum variants must be tuple variants with exactly one field — e.g. Temperature(TemperatureReading)",
+                    "TopicEnum variants must be tuple variants with exactly one field e.g. Temperature(TemperatureReading)",
                 ));
             }
         };

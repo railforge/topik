@@ -4,9 +4,9 @@ use bytes::Bytes;
 
 /// A raw message received from the broker.
 ///
-/// Contains the topic string exactly as received from the broker
+/// Contains the topic string received by the broker
 /// and the raw payload bytes. The `TopikClient` layer converts
-/// these into typed topics via `TopicWire::parse` and `Encoding::decode`.
+/// these into typed topics via [`TopicWire::parse`] and [`Encoding::decode`].
 #[derive(Debug, Clone)]
 pub struct RawMessage {
     /// The topic string as received from the broker.

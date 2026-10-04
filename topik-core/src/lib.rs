@@ -1,8 +1,7 @@
 //! Core traits and types for [topik](https://docs.rs/topik), typed pub/sub topics for Rust.
 //!
-//! This crate provides the foundational abstractions that everything else
-//! builds on. Most users should depend on [`topik`](https://docs.rs/topik)
-//! directly rather than this crate.
+//! Use this crate to implement topik into your own framework. For using topik out of the box
+//! use [`topik`](https://docs.rs/topik).
 //!
 //! # Crate contents
 //!

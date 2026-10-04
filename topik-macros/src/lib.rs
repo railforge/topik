@@ -10,9 +10,9 @@ mod parse;
 ///
 /// # Required attributes
 ///
-/// - `#[topic(segments(...))]` — ordered list of topic path segments
-/// - `#[topic(encoding = ...)]` — payload encoding type
-/// - `#[payload]` — marks exactly one field as the message payload
+/// - `#[topic(segments(...))]`: ordered list of topic path segments
+/// - `#[payload]`: marks exactly one field as the message payload;
+///   encoding is inferred from the field type
 ///
 /// # Example
 ///
@@ -21,7 +21,7 @@ mod parse;
 /// use topik::encoding::F32Encoding;
 ///
 /// #[derive(Topic)]
-/// #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
+/// #[topic(segments("sensors", device_id, "temperature"))]
 /// pub struct TemperatureReading {
 ///     pub device_id: u64,
 ///     #[payload]

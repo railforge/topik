@@ -7,7 +7,7 @@ use topik_core::__private::TopicWire;
 
 // multiple literals, multiple dynamic segments, literal in the middle
 #[derive(Topic)]
-#[topic(segments("factory", "v2", device_id, "readings", kind), encoding = RawEncoding)]
+#[topic(segments("factory", "v2", device_id, "readings", kind))]
 struct FactoryReading {
     device_id: u64,
     kind: String,
@@ -17,7 +17,7 @@ struct FactoryReading {
 
 // all literals, one dynamic segment at the end
 #[derive(Topic)]
-#[topic(segments("eu", "west", "factory", "sensors", device_id), encoding = RawEncoding)]
+#[topic(segments("eu", "west", "factory", "sensors", device_id))]
 struct DeepNestedSensor {
     device_id: u64,
     #[payload]
@@ -26,7 +26,7 @@ struct DeepNestedSensor {
 
 // dynamic segment first, literals after
 #[derive(Topic)]
-#[topic(segments(device_id, "metrics", "cpu"), encoding = RawEncoding)]
+#[topic(segments(device_id, "metrics", "cpu"))]
 struct CpuMetric {
     device_id: u64,
     #[payload]

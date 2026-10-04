@@ -9,7 +9,7 @@ rust-version = "1.88"
 
 [features]
 default = []
-mqtt = ["dep:rumqttc"]
+rumqttc = ["dep:rumqttc"]
 
 [dependencies]
 topik-core = { version = "0.2", path = "../topik-core" }

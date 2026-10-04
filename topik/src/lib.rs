@@ -5,13 +5,10 @@
 //! # Quick start
 //!
 //! ```ignore
-//! use topik::{Topic, TopicEnum, TopikClient};
-//! use topik::encoding::F32Encoding;
-//! use topik::protocol::Mqtt;
-//! use topik::transport::InMemoryTransport;
+//! use topik::prelude::*;
 //!
 //! #[derive(Topic)]
-//! #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
+//! #[topic(segments("sensors", device_id, "temperature"))]
 //! pub struct TemperatureReading {
 //!     pub device_id: u64,
 //!     #[payload]
@@ -27,16 +24,21 @@
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
 //!
-//!     client.publish(TemperatureReading {
-//!         device_id: 42,
-//!         data: 23.5,
-//!     }).await?;
+//!     // publish
+//!     client.publish(TemperatureReading { device_id: 42, data: 23.5 }).await?;
 //!
+//!     // subscribe to a single topic type
+//!     let mut sub = client.subscribe::<TemperatureReading>().await?;
+//!     while let Some(msg) = sub.next().await {
+//!         println!("device {} -> {}°C", msg.device_id, msg.data);
+//!     }
+//!
+//!     // or subscribe to multiple topic types at once
 //!     let mut sub = client.subscribe_many::<SensorTopics>().await?;
 //!     while let Some(event) = sub.next().await {
 //!         match event {
 //!             SensorTopics::Temperature(msg) => {
-//!                 println!("device {} → {}°C", msg.device_id, msg.data);
+//!                 println!("device {} -> {}°C", msg.device_id, msg.data);
 //!             }
 //!         }
 //!     }
@@ -50,8 +52,31 @@ mod subscriber;
 
 pub use client::TopikClient;
 pub use subscriber::{EnumSubscriber, Subscriber};
+// Re-export traits from topik-core
 pub use topik_core::{Topic, TopicEnum, TopikError};
+// Re-export derive macros
+// Users write #[derive(Topic)] and the macro generates the trait impl
 pub use topik_macros::{Topic, TopicEnum};
+
+pub mod prelude {
+    pub use crate::TopikClient;
+    pub use crate::encoding::{
+        BoolEncoding, F32Encoding, F64Encoding, I32Encoding, I64Encoding, RawEncoding,
+        StringEncoding, U8Encoding, U16Encoding, U32Encoding, U64Encoding,
+    };
+    pub use crate::protocol::{Mqtt, Nats, Redis};
+    pub use crate::segment::{
+        BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, StandardBool, TrueFalse,
+        YesNo, YesNoBool,
+    };
+    pub use crate::subscriber::{EnumSubscriber, Subscriber};
+    pub use crate::transport::InMemoryTransport;
+    pub use topik_core::{Topic, TopicEnum, TopikError};
+    pub use topik_macros::{Topic, TopicEnum};
+
+    #[cfg(feature = "rumqttc")]
+    pub use crate::transport::{MqttTransport, MqttTransportBuilder};
+}
 
 pub mod encoding {
     pub use topik_core::{
@@ -73,8 +98,8 @@ pub mod protocol {
 
 pub mod transport;
 
-#[cfg(feature = "mqtt")]
-pub use transport::{MqttClient, MqttClientBuilder, MqttPublishBuilder};
+#[cfg(feature = "rumqttc")]
+pub use transport::{MqttTransport, MqttTransportBuilder};
 
 #[doc(hidden)]
 pub mod __private {

@@ -4,10 +4,7 @@
 //!   cargo run --example basic
 
 use bytes::Bytes;
-use topik::encoding::RawEncoding;
-use topik::protocol::Mqtt;
-use topik::transport::InMemoryTransport;
-use topik::{Topic, TopikClient};
+use topik::prelude::*;
 
 /// A temperature reading from a sensor device.
 ///
@@ -16,7 +13,7 @@ use topik::{Topic, TopikClient};
 ///   NATS  -> "sensors.{device_id}.temperature"
 ///   Redis -> "sensors:{device_id}:temperature"
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "temperature"), encoding = RawEncoding)]
+#[topic(segments("sensors", device_id, "temperature"))]
 pub struct TemperatureReading {
     pub device_id: u64,
     #[payload]

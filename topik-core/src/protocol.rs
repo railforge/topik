@@ -30,7 +30,7 @@ pub trait Protocol: Send + Sync + 'static {
     /// ```
     const SEPARATOR: char;
 
-    /// The wildcard token matching exactly one topic segment.
+    /// Wildcard token matching exactly one topic segment.
     ///
     /// ```text
     /// MQTT  -> "+"   sensors/+/temperature
@@ -39,7 +39,7 @@ pub trait Protocol: Send + Sync + 'static {
     /// ```
     const SINGLE_WILDCARD: &'static str;
 
-    /// The wildcard token matching one or more trailing segments.
+    /// Wildcard token matching one or more trailing segments.
     ///
     /// ```text
     /// MQTT  -> "#"   sensors/#

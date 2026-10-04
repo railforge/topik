@@ -6,7 +6,7 @@ use topik::protocol::{Mqtt, Nats};
 use topik::transport::InMemoryTransport;
 
 #[derive(Topic, Debug, PartialEq)]
-#[topic(segments("sensors", device_id, "temperature"), encoding = RawEncoding)]
+#[topic(segments("sensors", device_id, "temperature"))]
 struct TemperatureReading {
     device_id: u64,
     #[payload]
@@ -14,7 +14,7 @@ struct TemperatureReading {
 }
 
 #[derive(Topic, Debug, PartialEq)]
-#[topic(segments("devices", device_id, "active"), encoding = RawEncoding)]
+#[topic(segments("devices", device_id, "active"))]
 struct DeviceActive {
     device_id: u64,
     #[payload]

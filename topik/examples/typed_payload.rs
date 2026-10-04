@@ -4,17 +4,11 @@
 //!   cargo run --example typed_payload
 
 use bytes::Bytes;
-use topik::encoding::{
-    BoolEncoding, F32Encoding, I32Encoding, RawEncoding, StringEncoding, U64Encoding,
-};
-use topik::protocol::Mqtt;
-use topik::segment::OneZero;
-use topik::transport::InMemoryTransport;
-use topik::{Topic, TopikClient};
+use topik::prelude::*;
 
 // float payload
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
+#[topic(segments("sensors", device_id, "temperature"))]
 pub struct TemperatureReading {
     pub device_id: u64,
     #[payload]
@@ -23,7 +17,7 @@ pub struct TemperatureReading {
 
 // String payload
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "status"), encoding = StringEncoding)]
+#[topic(segments("sensors", device_id, "status"))]
 pub struct DeviceStatus {
     pub device_id: u64,
     #[payload]
@@ -31,16 +25,16 @@ pub struct DeviceStatus {
 }
 
 // bool payload
-// BoolEncoding is configurable — choose how true/false are encoded:
+// Choose how true/false are encoded:
 //   BoolEncoding<TrueFalse> -> "true" / "false"  (default)
 //   BoolEncoding<OneZero>   -> "1" / "0"          (legacy systems)
 //   BoolEncoding<YesNo>     -> "yes" / "no"
 //   BoolEncoding<OnOff>     -> "on" / "off"       (IoT/home automation)
 #[derive(Topic, Debug)]
-#[topic(segments("devices", device_id, "active"), encoding = BoolEncoding<OneZero>)]
+#[topic(segments("devices", device_id, "active"))]
 pub struct DeviceActive {
     pub device_id: u64,
-    #[payload]
+    #[payload(encoding = BoolEncoding<OneZero>)]
     pub data: bool,
 }
 
@@ -48,7 +42,7 @@ pub struct DeviceActive {
 // Supported: U8Encoding, U16Encoding, U32Encoding, U64Encoding,
 //            I32Encoding, I64Encoding, F32Encoding, F64Encoding
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "count"), encoding = U64Encoding)]
+#[topic(segments("sensors", device_id, "count"))]
 pub struct MessageCount {
     pub device_id: u64,
     #[payload]
@@ -57,7 +51,7 @@ pub struct MessageCount {
 
 // Signed integer payload
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "offset"), encoding = I32Encoding)]
+#[topic(segments("sensors", device_id, "offset"))]
 pub struct TemperatureOffset {
     pub device_id: u64,
     #[payload]
@@ -68,7 +62,7 @@ pub struct TemperatureOffset {
 // Use `RawEncoding` when the payload schema is unknown or for legacy systems.
 // Migrate to a typed encoding once the schema is understood.
 #[derive(Topic, Debug)]
-#[topic(segments("legacy", device_id, "raw"), encoding = RawEncoding)]
+#[topic(segments("legacy", device_id, "raw"))]
 pub struct LegacyReading {
     pub device_id: u64,
     #[payload]

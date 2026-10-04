@@ -10,7 +10,7 @@ use crate::TopikError;
 ///
 /// ```ignore
 /// #[derive(Topic)]
-/// #[topic(segments("legacy", device_id), encoding = RawEncoding)]
+/// #[topic(segments("legacy", device_id))]
 /// pub struct LegacyTopic {
 ///     pub device_id: u64,
 ///     #[payload]
@@ -35,7 +35,7 @@ impl Encoding<Bytes> for RawEncoding {
 ///
 /// ```ignore
 /// #[derive(Topic)]
-/// #[topic(segments("legacy", device_id), encoding = StringEncoding)]
+/// #[topic(segments("legacy", device_id))]
 /// pub struct LegacyReading {
 ///     pub device_id: u64,
 ///     #[payload]

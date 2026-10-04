@@ -7,12 +7,13 @@ use topik_core::{Encoding, TopikError};
 
 use crate::subscriber::{EnumSubscriber, Subscriber};
 
-/// The main entry point for typed pub/sub messaging.
+/// Topik's typed client. A thin wrapper around a pub/sub transport.
 ///
-/// `TopikClient` wraps a [`Transport`] and provides a typed API for
-/// publishing and subscribing to topics defined with `#[derive(Topic)]`.
+/// `TopikClient` sits in front of any [`Transport`] implementation and adds
+/// compile-time type safety for topic definitions, payload encoding, and
+/// subscription patterns. The underlying protocol client is provided by the transport.
 ///
-/// The protocol is determined by the transport's associated `Protocol` type.
+/// The protocol is inferred from the transport's associated [`Protocol`] type.
 ///
 /// # Example
 ///
@@ -27,17 +28,41 @@ use crate::subscriber::{EnumSubscriber, Subscriber};
 ///
 /// let mut sub = client.subscribe::<TemperatureReading>().await?;
 /// while let Some(msg) = sub.next().await {
-///     println!("device {} → {}°C", msg.device_id, msg.data);
+///     println!("device {} -> {}°C", msg.device_id, msg.data);
 /// }
 /// ```
 pub struct TopikClient<T: Transport> {
-    pub(crate) transport: T,
+    transport: T,
 }
 
 impl<T: Transport> TopikClient<T> {
-    /// Create a new client wrapping the given transport.
+    /// Wrap a transport in a typed topik client.
     pub fn new(transport: T) -> Self {
         TopikClient { transport }
+    }
+
+    /// Returns the subscription pattern for a single topic type, using this client's protocol.
+    ///
+    /// ```ignore
+    /// println!("{}", client.pattern::<TemperatureReading>());
+    /// // MQTT -> "sensors/+/temperature"
+    /// // NATS -> "sensors.*.temperature"
+    /// ```
+    pub fn pattern<M: TopicWire>(&self) -> String {
+        M::wildcard_pattern_for::<T::Protocol>()
+    }
+
+    /// Returns all subscription patterns this enum covers, using this client's protocol.
+    ///
+    /// Useful for logging or passing patterns to external systems.
+    ///
+    /// ```ignore
+    /// for pattern in client.patterns::<SensorTopics>() {
+    ///     println!("{}", pattern);
+    /// }
+    /// ```
+    pub fn patterns<E: TopicEnum>(&self) -> Vec<String> {
+        E::patterns_for::<T::Protocol>()
     }
 
     /// Publish a typed topic message.
@@ -78,8 +103,7 @@ impl<T: Transport> TopikClient<T> {
     /// Subscribe to all topics covered by a [`TopicEnum`].
     ///
     /// Returns an [`EnumSubscriber`] that yields typed enum variants
-    /// as messages arrive. Each topic pattern in the enum gets its own
-    /// concurrent stream.
+    /// as messages arrive. All patterns in the enum are subscribed to concurrently.
     ///
     /// # Example
     ///
@@ -122,8 +146,8 @@ impl<T: Transport> TopikClient<T> {
     /// ```ignore
     /// let reading = TemperatureReading { device_id: 42, data: 23.5 };
     /// println!("{}", client.display(&reading));
-    /// // MQTT → "sensors/42/temperature"
-    /// // NATS → "sensors.42.temperature"
+    /// // MQTT -> "sensors/42/temperature"
+    /// // NATS -> "sensors.42.temperature"
     /// ```
     pub fn display<M: TopicWire>(&self, topic: &M) -> String {
         topic.render(T::Protocol::SEPARATOR)
@@ -191,6 +215,7 @@ impl<'a, T: Transport + Clone, M: TopicWire> IntoFuture for TopikSubscribeBuilde
                 .inner
                 .build_pattern(T::Protocol::SEPARATOR, T::Protocol::SINGLE_WILDCARD);
             let stream = self.client.transport.subscribe(pattern.clone()).await?;
+
             Ok(Subscriber {
                 stream,
                 pattern,

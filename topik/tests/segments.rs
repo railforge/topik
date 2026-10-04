@@ -8,7 +8,7 @@ use topik::segment::{BoolSegment, OnOff, OneZero, TrueFalse, YesNo};
 use topik_core::__private::TopicWire;
 
 #[derive(Topic)]
-#[topic(segments("device", device_id, "active", state), encoding = RawEncoding)]
+#[topic(segments("device", device_id, "active", state))]
 struct DeviceState {
     device_id: u64,
     state: BoolSegment<OneZero>,
@@ -17,7 +17,7 @@ struct DeviceState {
 }
 
 #[derive(Topic)]
-#[topic(segments("home", room, "light", state), encoding = RawEncoding)]
+#[topic(segments("home", room, "light", state))]
 struct LightState {
     room: String,
     state: BoolSegment<TrueFalse>,
@@ -26,7 +26,7 @@ struct LightState {
 }
 
 #[derive(Topic)]
-#[topic(segments("switch", device_id, state), encoding = RawEncoding)]
+#[topic(segments("switch", device_id, state))]
 struct SwitchState {
     device_id: u64,
     state: BoolSegment<YesNo>,
@@ -35,7 +35,7 @@ struct SwitchState {
 }
 
 #[derive(Topic)]
-#[topic(segments("relay", device_id, state), encoding = RawEncoding)]
+#[topic(segments("relay", device_id, state))]
 struct RelayState {
     device_id: u64,
     state: BoolSegment<OnOff>,
