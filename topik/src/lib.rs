@@ -30,7 +30,7 @@
 //!     // subscribe to a single topic type
 //!     let mut sub = client.subscribe::<TemperatureReading>().await?;
 //!     while let Some(msg) = sub.next().await {
-//!         println!("device {} → {}°C", msg.device_id, msg.data);
+//!         println!("device {} -> {}°C", msg.device_id, msg.data);
 //!     }
 //!
 //!     // or subscribe to multiple topic types at once
@@ -38,7 +38,7 @@
 //!     while let Some(event) = sub.next().await {
 //!         match event {
 //!             SensorTopics::Temperature(msg) => {
-//!                 println!("device {} → {}°C", msg.device_id, msg.data);
+//!                 println!("device {} -> {}°C", msg.device_id, msg.data);
 //!             }
 //!         }
 //!     }

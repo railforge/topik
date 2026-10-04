@@ -155,7 +155,7 @@ while let Some(event) = sub.next().await {
 
 The compiler enforces exhaustive matching. Missing a variant is a compile error.
 
-`InMemoryTransport` also works as a typed in-process event bus — no broker needed:
+`InMemoryTransport` also works as a typed in-process event bus with no broker needed:
 
 ```rust
 let transport = InMemoryTransport::<Mqtt>::new();

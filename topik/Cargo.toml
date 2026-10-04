@@ -10,7 +10,6 @@ rust-version = "1.88"
 [features]
 default = []
 rumqttc = ["dep:rumqttc"]
-minimq = ["dep:minimq"]
 
 [dependencies]
 topik-core = { version = "0.2", path = "../topik-core" }
@@ -18,7 +17,6 @@ topik-macros = { version = "0.2", path = "../topik-macros" }
 bytes = "1"
 tokio = { version = "1", features = ["sync", "rt"] }
 rumqttc = { version = "0.25", optional = true }
-minimq = { version = "0.13.3", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "sync", "time"] }

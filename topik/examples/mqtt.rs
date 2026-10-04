@@ -113,14 +113,14 @@ mod example {
                 match sub_client.parse::<SensorTopics>(&p.topic, &p.payload) {
                     Ok(SensorTopics::Temperature(msg)) => {
                         println!(
-                            "  Temperature → device {} sent {:.1}°C",
+                            "  Temperature -> device {} sent {:.1}°C",
                             msg.device_id, msg.data
                         );
                         received += 1;
                     }
                     Ok(SensorTopics::Humidity(msg)) => {
                         println!(
-                            "  Humidity    → device {} sent {:.1}%",
+                            "  Humidity -> device {} sent {:.1}%",
                             msg.device_id, msg.data
                         );
                         received += 1;
@@ -146,7 +146,7 @@ mod example {
                 && msg.device_id == 99
             {
                 println!(
-                    "parse_topic → device {} sent {:.1}°C",
+                    "parse_topic -> device {} sent {:.1}°C",
                     msg.device_id, msg.data
                 );
                 break;

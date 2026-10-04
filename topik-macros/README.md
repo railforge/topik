@@ -9,8 +9,8 @@ Proc macros for [topik](https://crates.io/crates/topik).
 
 This is an internal crate. Do not depend on it directly.
 
-Add `topik` to your `Cargo.toml` instead — it re-exports everything you need.
+Add `topik` to your `Cargo.toml` instead.
 
 ## License
 
-MIT — see [LICENSE](../../LICENSE).
+MIT see [LICENSE](../../LICENSE).

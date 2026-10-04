@@ -28,7 +28,7 @@ use crate::subscriber::{EnumSubscriber, Subscriber};
 ///
 /// let mut sub = client.subscribe::<TemperatureReading>().await?;
 /// while let Some(msg) = sub.next().await {
-///     println!("device {} → {}°C", msg.device_id, msg.data);
+///     println!("device {} -> {}°C", msg.device_id, msg.data);
 /// }
 /// ```
 pub struct TopikClient<T: Transport> {
@@ -122,8 +122,8 @@ impl<T: Transport> TopikClient<T> {
     /// ```ignore
     /// let reading = TemperatureReading { device_id: 42, data: 23.5 };
     /// println!("{}", client.display(&reading));
-    /// // MQTT → "sensors/42/temperature"
-    /// // NATS → "sensors.42.temperature"
+    /// // MQTT -> "sensors/42/temperature"
+    /// // NATS -> "sensors.42.temperature"
     /// ```
     pub fn display<M: TopicWire>(&self, topic: &M) -> String {
         topic.render(T::Protocol::SEPARATOR)

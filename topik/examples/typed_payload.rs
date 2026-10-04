@@ -25,7 +25,7 @@ pub struct DeviceStatus {
 }
 
 // bool payload
-// BoolEncoding is configurable — choose how true/false are encoded:
+// Choose how true/false are encoded:
 //   BoolEncoding<TrueFalse> -> "true" / "false"  (default)
 //   BoolEncoding<OneZero>   -> "1" / "0"          (legacy systems)
 //   BoolEncoding<YesNo>     -> "yes" / "no"

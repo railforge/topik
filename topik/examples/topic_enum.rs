@@ -1,8 +1,7 @@
 //! TopicEnum example: subscribe to multiple topic types in one call.
 //!
-//! Shows how to use TopicEnum with subscribe_many to handle multiple
-//! topic types through a single subscriber — no manual pattern
-//! construction, no separators, no tokio::select! boilerplate.
+//! Shows how to use TopicEnum with `subscribe_many` to handle multiple
+//! topic types through a single subscriber.
 //!
 //! Run with:
 //!   cargo run --example topic_enum
@@ -45,7 +44,7 @@ pub enum SensorTopics {
 async fn main() {
     let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
 
-    // subscribe to all topics in the enum — one call, no separators
+    // subscribe to all topics in the enum
     let mut sub = client.subscribe_many::<SensorTopics>().await.unwrap();
 
     // publish one of each
@@ -71,7 +70,6 @@ async fn main() {
         .await
         .unwrap();
 
-    // receive and match — exhaustive, compiler catches missing variants
     for _ in 0..3 {
         match sub.next().await.unwrap() {
             SensorTopics::Temperature(msg) => {

@@ -213,7 +213,7 @@ pub fn parse_topic_enum_input(input: DeriveInput) -> Result<TopicEnumInput> {
             _ => {
                 return Err(Error::new_spanned(
                     &variant.ident,
-                    "TopicEnum variants must be tuple variants with exactly one field — e.g. Temperature(TemperatureReading)",
+                    "TopicEnum variants must be tuple variants with exactly one field e.g. Temperature(TemperatureReading)",
                 ));
             }
         };

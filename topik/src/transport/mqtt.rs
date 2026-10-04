@@ -1,5 +1,5 @@
 #[cfg(feature = "rumqttc")]
-mod mqtt_impl {
+mod rumqtt_impl {
     use bytes::Bytes;
     use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
     use std::time::Duration;
@@ -130,8 +130,8 @@ mod mqtt_impl {
 
         /// Apply a custom modifier to the underlying `MqttOptions`.
         ///
-        /// Use this for advanced configuration not exposed by the builder —
-        /// TLS, websockets, proxy settings etc.
+        /// Use this for advanced configuration not exposed by the builder
+        /// (e.g., TLS, websockets, proxy settings etc.)
         ///
         /// ```ignore
         /// use rumqttc::Transport;
@@ -154,9 +154,6 @@ mod mqtt_impl {
         }
 
         /// Build the client and event loop.
-        ///
-        /// Returns `(MqttClient, EventLoop)` — you own the event loop.
-        /// Poll it in your own task or loop.
         pub fn build(self) -> (MqttClient, EventLoop) {
             let mut options = MqttOptions::new(&self.client_id, &self.host, self.port);
             options.set_keep_alive(self.keep_alive);
@@ -386,4 +383,4 @@ mod mqtt_impl {
 }
 
 #[cfg(feature = "rumqttc")]
-pub use mqtt_impl::{MqttClient, MqttClientBuilder, MqttPublishBuilder};
+pub use rumqtt_impl::{MqttClient, MqttClientBuilder, MqttPublishBuilder};

@@ -139,7 +139,7 @@ async fn subscribe_many_and_parse_enum() {
 
     sub_client.subscribe_many::<T2Topics>().await.unwrap();
 
-    // wait for both subacks — subscribe_many sends two SUBSCRIBE packets
+    // wait for both subacks
     wait_for_suback(&mut eventloop).await;
     wait_for_suback(&mut eventloop).await;
 
