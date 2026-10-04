@@ -29,7 +29,7 @@ Becomes a typed Rust definition:
 
 ```rust
 #[derive(Topic)]
-#[topic(segments("factory", "sensors", device_id, "temperature"), encoding = F32Encoding)]
+#[topic(segments("factory", "sensors", device_id, "temperature"))]
 pub struct TemperatureReading {
     pub device_id: u64,
     #[payload]
@@ -245,7 +245,7 @@ A topic is a Rust struct with `#[derive(Topic)]`.
 
 ```rust
 #[derive(Topic)]
-#[topic(segments("factory", "v2", device_id, kind), encoding = F32Encoding)]
+#[topic(segments("factory", "v2", device_id, kind))]
 pub struct SensorReading {
     pub device_id: u64,
     pub kind: SensorKind,
@@ -269,7 +269,7 @@ Any topic structure is expressible, including messy legacy ones:
 
 ```rust
 #[derive(Topic)]
-#[topic(segments("legacy", "v1", device_id, "raw", kind, "data"), encoding = RawEncoding)]
+#[topic(segments("legacy", "v1", device_id, "raw", kind, "data"))]
 pub struct LegacySensor {
     pub device_id: u64,
     pub kind: String,
@@ -309,7 +309,7 @@ Inheriting a messy MQTT codebase? Start by mapping existing topics as-is.
 
 ```rust
 #[derive(Topic)]
-#[topic(segments("legacy", "v1", device_id, "raw", kind), encoding = RawEncoding)]
+#[topic(segments("legacy", "v1", device_id, "raw", kind))]
 pub struct LegacySensor {
     pub device_id: u64,
     pub kind: String,

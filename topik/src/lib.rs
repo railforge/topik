@@ -8,7 +8,7 @@
 //! use topik::prelude::*;
 //!
 //! #[derive(Topic)]
-//! #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
+//! #[topic(segments("sensors", device_id, "temperature"))]
 //! pub struct TemperatureReading {
 //!     pub device_id: u64,
 //!     #[payload]

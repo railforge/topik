@@ -14,10 +14,10 @@ use std::marker::PhantomData;
 ///
 /// // payload is "1" for true, "0" for false on the wire
 /// #[derive(Topic)]
-/// #[topic(segments("device", device_id, "active"), encoding = BoolEncoding<OneZero>)]
+/// #[topic(segments("device", device_id, "active"))]
 /// pub struct DeviceActive {
 ///     pub device_id: u64,
-///     #[payload]
+///     #[payload(encoding = BoolEncoding<OneZero>)]
 ///     pub data: bool,
 /// }
 /// ```
