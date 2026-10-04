@@ -14,7 +14,7 @@ use topik::prelude::*;
 // --- Sensor telemetry topics ---
 
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
+#[topic(segments("sensors", device_id, "temperature"))]
 pub struct TemperatureReading {
     pub device_id: u64,
     #[payload]
@@ -22,7 +22,7 @@ pub struct TemperatureReading {
 }
 
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "humidity"), encoding = F32Encoding)]
+#[topic(segments("sensors", device_id, "humidity"))]
 pub struct HumidityReading {
     pub device_id: u64,
     #[payload]
@@ -40,7 +40,7 @@ pub enum SensorTopics {
 // --- Device control topics ---
 
 #[derive(Topic, Debug)]
-#[topic(segments("devices", device_id, "reboot"), encoding = RawEncoding)]
+#[topic(segments("devices", device_id, "reboot"))]
 pub struct RebootCommand {
     pub device_id: u64,
     #[payload]
@@ -48,7 +48,7 @@ pub struct RebootCommand {
 }
 
 #[derive(Topic, Debug)]
-#[topic(segments("devices", device_id, "config"), encoding = StringEncoding)]
+#[topic(segments("devices", device_id, "config"))]
 pub struct ConfigUpdate {
     pub device_id: u64,
     #[payload]

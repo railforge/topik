@@ -15,7 +15,7 @@ mod example {
     use topik::prelude::*;
 
     #[derive(Topic, Debug)]
-    #[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
+    #[topic(segments("sensors", device_id, "temperature"))]
     pub struct TemperatureReading {
         pub device_id: u64,
         #[payload]
@@ -23,7 +23,7 @@ mod example {
     }
 
     #[derive(Topic, Debug)]
-    #[topic(segments("sensors", device_id, "humidity"), encoding = F32Encoding)]
+    #[topic(segments("sensors", device_id, "humidity"))]
     pub struct HumidityReading {
         pub device_id: u64,
         #[payload]

@@ -8,7 +8,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
     let key_name = format_ident!("{}Key", name);
     let builder_name = format_ident!("{}SubscribeBuilder", name);
     let name_str = name.to_string();
-    let encoding = &input.encoding;
+    let encoding = &input.payload.encoding;
     let payload_name = &input.payload.name;
     let payload_ty = &input.payload.ty;
 

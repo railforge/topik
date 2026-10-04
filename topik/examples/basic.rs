@@ -13,7 +13,7 @@ use topik::prelude::*;
 ///   NATS  -> "sensors.{device_id}.temperature"
 ///   Redis -> "sensors:{device_id}:temperature"
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "temperature"), encoding = RawEncoding)]
+#[topic(segments("sensors", device_id, "temperature"))]
 pub struct TemperatureReading {
     pub device_id: u64,
     #[payload]

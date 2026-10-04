@@ -13,7 +13,7 @@ use topik_core::Encoding;
 // --- StringEncoding topic ---
 
 #[derive(Topic)]
-#[topic(segments("sensor", device_id), encoding = StringEncoding)]
+#[topic(segments("sensor", device_id))]
 struct StringSensor {
     device_id: u64,
     #[payload]
@@ -23,7 +23,7 @@ struct StringSensor {
 // --- RawEncoding topic ---
 
 #[derive(Topic)]
-#[topic(segments("sensor", device_id), encoding = RawEncoding)]
+#[topic(segments("sensor", device_id))]
 struct RawSensor {
     device_id: u64,
     #[payload]
@@ -33,7 +33,7 @@ struct RawSensor {
 // --- U64Encoding topic ---
 
 #[derive(Topic)]
-#[topic(segments("counter", device_id), encoding = U64Encoding)]
+#[topic(segments("counter", device_id))]
 struct CounterReading {
     device_id: u64,
     #[payload]
@@ -43,10 +43,10 @@ struct CounterReading {
 // --- BoolEncoding topic ---
 
 #[derive(Topic)]
-#[topic(segments("device", device_id, "active"), encoding = BoolEncoding<OneZero>)]
+#[topic(segments("device", device_id, "active"))]
 struct DeviceActive {
     device_id: u64,
-    #[payload]
+    #[payload(encoding = BoolEncoding<OneZero>)]
     data: bool,
 }
 

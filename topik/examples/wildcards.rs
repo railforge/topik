@@ -18,7 +18,7 @@ mod example {
 
     /// Topic: `sensors/{factory_id}/{device_id}/temperature`
     #[derive(Topic, Debug)]
-    #[topic(segments("sensors", factory_id, device_id, "temperature"), encoding = F32Encoding)]
+    #[topic(segments("sensors", factory_id, device_id, "temperature"))]
     pub struct TemperatureReading {
         pub factory_id: u64,
         pub device_id: u64,

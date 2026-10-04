@@ -7,7 +7,7 @@ use topik::transport::InMemoryTransport;
 use topik::{Topic, TopicEnum, TopikClient};
 
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "temperature"), encoding = F32Encoding)]
+#[topic(segments("sensors", device_id, "temperature"))]
 struct TemperatureReading {
     device_id: u64,
     #[payload]
@@ -15,7 +15,7 @@ struct TemperatureReading {
 }
 
 #[derive(Topic, Debug)]
-#[topic(segments("sensors", device_id, "humidity"), encoding = F32Encoding)]
+#[topic(segments("sensors", device_id, "humidity"))]
 struct HumidityReading {
     device_id: u64,
     #[payload]
@@ -23,7 +23,7 @@ struct HumidityReading {
 }
 
 #[derive(Topic, Debug)]
-#[topic(segments("devices", device_id, "reboot"), encoding = RawEncoding)]
+#[topic(segments("devices", device_id, "reboot"))]
 struct RebootCommand {
     device_id: u64,
     #[payload]

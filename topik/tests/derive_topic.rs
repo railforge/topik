@@ -5,7 +5,7 @@ use topik::encoding::RawEncoding;
 use topik_core::__private::TopicWire;
 
 #[derive(Topic)]
-#[topic(segments("sensor", device_id), encoding = RawEncoding)]
+#[topic(segments("sensor", device_id))]
 struct TemperatureSensor {
     device_id: u64,
     #[payload]

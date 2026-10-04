@@ -41,7 +41,7 @@ async fn wait_for_suback(eventloop: &mut rumqttc::EventLoop) {
 // so subscriptions never overlap between parallel tests.
 
 #[derive(Topic, Debug, PartialEq)]
-#[topic(segments("t1", device_id, "temp"), encoding = F32Encoding)]
+#[topic(segments("t1", device_id, "temp"))]
 struct T1Temperature {
     device_id: u64,
     #[payload]
@@ -49,7 +49,7 @@ struct T1Temperature {
 }
 
 #[derive(Topic, Debug, PartialEq)]
-#[topic(segments("t2", device_id, "temp"), encoding = F32Encoding)]
+#[topic(segments("t2", device_id, "temp"))]
 struct T2Temperature {
     device_id: u64,
     #[payload]
@@ -57,7 +57,7 @@ struct T2Temperature {
 }
 
 #[derive(Topic, Debug, PartialEq)]
-#[topic(segments("t2", device_id, "humidity"), encoding = F32Encoding)]
+#[topic(segments("t2", device_id, "humidity"))]
 struct T2Humidity {
     device_id: u64,
     #[payload]
@@ -65,7 +65,7 @@ struct T2Humidity {
 }
 
 #[derive(Topic, Debug, PartialEq)]
-#[topic(segments("t3", device_id, "temp"), encoding = F32Encoding)]
+#[topic(segments("t3", device_id, "temp"))]
 struct T3Temperature {
     device_id: u64,
     #[payload]
