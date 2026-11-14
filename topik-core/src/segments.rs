@@ -127,7 +127,7 @@ pub trait BoolRepr {
 
 /// A boolean topic segment typed as a [`BoolRepr`].
 ///
-/// Default: [`StandardBool`]
+/// Default: [`TrueFalse`]
 pub struct BoolSegment<R: BoolRepr>(bool, PhantomData<R>);
 
 impl<R: BoolRepr> BoolSegment<R> {
@@ -204,18 +204,6 @@ impl BoolRepr for OnOff {
     const TRUE: &'static str = "on";
     const FALSE: &'static str = "off";
 }
-
-/// Boolean segment using `"true"` / `"false"`. (default)
-pub type StandardBool = BoolSegment<TrueFalse>;
-
-/// Boolean segment using `"1"` / `"0"`.
-pub type BinaryBool = BoolSegment<OneZero>;
-
-/// Boolean segment using `"yes"` / `"no"`.
-pub type YesNoBool = BoolSegment<YesNo>;
-
-/// Boolean segment using `"on"` / `"off"`.
-pub type OnOffBool = BoolSegment<OnOff>;
 
 #[cfg(feature = "uuid")]
 impl Segment for uuid::Uuid {
