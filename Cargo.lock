@@ -2071,11 +2071,9 @@ dependencies = [
 name = "topik-macros"
 version = "0.3.0"
 dependencies = [
- "bytes",
  "proc-macro2",
  "quote",
  "syn 3.0.3",
- "topik-core",
 ]
 
 [[package]]

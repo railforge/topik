@@ -18,7 +18,6 @@ mod parse;
 ///
 /// ```ignore
 /// use topik::Topic;
-/// use topik::encoding::F32Encoding;
 ///
 /// #[derive(Topic)]
 /// #[topic(segments("sensors", device_id, "temperature"))]
