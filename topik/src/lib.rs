@@ -65,10 +65,7 @@ pub mod prelude {
         StringEncoding, U8Encoding, U16Encoding, U32Encoding, U64Encoding,
     };
     pub use crate::protocol::{Mqtt, Nats, Redis};
-    pub use crate::segment::{
-        BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, StandardBool, TrueFalse,
-        YesNo, YesNoBool,
-    };
+    pub use crate::segment::{BoolRepr, BoolSegment, OnOff, OneZero, TrueFalse, YesNo};
     pub use crate::subscriber::{EnumSubscriber, Subscriber};
     pub use crate::transport::InMemoryTransport;
     pub use topik_core::{Topic, TopicEnum, TopikError};
@@ -86,10 +83,7 @@ pub mod encoding {
 }
 
 pub mod segment {
-    pub use topik_core::{
-        BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, Segment, StandardBool,
-        TrueFalse, YesNo, YesNoBool,
-    };
+    pub use topik_core::{BoolRepr, BoolSegment, OnOff, OneZero, Segment, TrueFalse, YesNo};
 }
 
 pub mod protocol {
