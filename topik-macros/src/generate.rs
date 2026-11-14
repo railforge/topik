@@ -64,11 +64,6 @@ pub fn generate(input: TopicInput) -> TokenStream {
 
     let key_field_names = fields.iter().map(|f| &f.name);
 
-    let wildcard_segments = segments.iter().map(|seg| match seg {
-        SegmentKind::Literal(lit) => quote! { #lit },
-        SegmentKind::Dynamic(_) => quote! { single },
-    });
-
     let from_key_fields = fields.iter().map(|f| {
         let fname = &f.name;
         quote! { #fname: key.#fname }
@@ -187,8 +182,11 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 single: &'static str,
                 _multi: &'static str,
             ) -> String {
-                [#(#wildcard_segments,)*]
-                    .join(&sep.to_string())
+                ::topik::__private::SubscribeBuilder::build_pattern(
+                    &<Self as ::topik::__private::TopicWire>::subscribe_builder(),
+                    sep,
+                    single,
+                )
             }
 
             fn payload(&self) -> &Self::Payload {
