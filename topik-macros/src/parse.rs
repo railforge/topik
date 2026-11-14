@@ -1,7 +1,4 @@
-use quote::format_ident;
-use syn::{
-    Attribute, DeriveInput, Error, Fields, Ident, LitStr, Path, Result, Type, parse::ParseStream,
-};
+use syn::{Attribute, DeriveInput, Error, Fields, Ident, LitStr, Result, Type, parse::ParseStream};
 
 /// Intermediate representation of a `#[derive(Topic)]` input.
 pub struct TopicInput {
@@ -21,7 +18,7 @@ pub enum SegmentKind {
 pub struct PayloadField {
     pub name: Ident,
     pub ty: Type,
-    pub encoding: Path,
+    pub encoding: Type,
 }
 
 /// A non-payload field.
@@ -67,7 +64,7 @@ pub fn parse_topic_input(input: DeriveInput) -> Result<TopicInput> {
             .ok_or_else(|| Error::new_spanned(field, "Topic fields must be named"))?;
 
         match (
-            parse_payload_attr(&field.attrs, &field.ty, field)?,
+            parse_payload_attr(&field.attrs, &field.ty)?,
             payload.is_some(),
         ) {
             (Some(_), true) => {
@@ -140,70 +137,26 @@ fn parse_topic_attrs(attrs: &[Attribute], _span: &Ident) -> Result<TopicAttrs> {
     Ok(TopicAttrs { segments })
 }
 
-const ENCODING_MAP: &[(&str, &str)] = &[
-    ("f32", "F32Encoding"),
-    ("f64", "F64Encoding"),
-    ("u8", "U8Encoding"),
-    ("u16", "U16Encoding"),
-    ("u32", "U32Encoding"),
-    ("u64", "U64Encoding"),
-    ("i32", "I32Encoding"),
-    ("i64", "I64Encoding"),
-    ("String", "StringEncoding"),
-    ("Bytes", "RawEncoding"),
-];
-
-fn infer_encoding(ty: &Type) -> Option<Path> {
-    let path = match ty {
-        Type::Path(tp) => &tp.path,
-        _ => return None,
-    };
-    let ident = path.segments.last()?.ident.to_string();
-
-    if ident == "bool" {
-        return Some(syn::parse_quote!(
-            ::topik::encoding::BoolEncoding<::topik::segment::TrueFalse>
-        ));
-    }
-
-    let name = ENCODING_MAP
-        .iter()
-        .find(|(t, _)| *t == ident.as_str())
-        .map(|(_, e)| format_ident!("{}", e))?;
-
-    Some(syn::parse_quote!(::topik::encoding::#name))
-}
-
-fn parse_payload_attr(
-    attrs: &[Attribute],
-    field_ty: &Type,
-    field: &syn::Field,
-) -> Result<Option<Path>> {
+fn parse_payload_attr(attrs: &[Attribute], field_ty: &Type) -> Result<Option<Type>> {
     for attr in attrs {
         if !attr.path().is_ident("payload") {
             continue;
         }
-        let mut encoding: Option<Path> = None;
+        let mut encoding: Option<Type> = None;
         if attr.meta.require_list().is_ok() {
             attr.parse_nested_meta(|meta| {
                 if meta.path.is_ident("encoding") {
                     meta.input.parse::<syn::Token![=]>()?;
-                    encoding = Some(meta.input.parse::<Path>()?);
+                    encoding = Some(meta.input.parse::<Type>()?);
                     Ok(())
                 } else {
                     Err(meta.error("unknown payload attribute. Expected encoding = ..."))
                 }
             })?;
         }
-        let encoding = match encoding {
-            Some(e) => e,
-            None => infer_encoding(field_ty).ok_or_else(|| {
-                Error::new_spanned(
-                    field,
-                    "cannot infer encoding for this type. Use #[payload(encoding = YourEncoding)]",
-                )
-            })?,
-        };
+        let encoding = encoding.unwrap_or_else(
+            || syn::parse_quote!(<#field_ty as ::topik::__private::DefaultEncoding>::Encoding),
+        );
         return Ok(Some(encoding));
     }
     Ok(None)

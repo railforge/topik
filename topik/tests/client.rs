@@ -1,7 +1,6 @@
 use bytes::Bytes;
 use topik::Topic;
 use topik::TopikClient;
-use topik::encoding::RawEncoding;
 use topik::protocol::{Mqtt, Nats};
 use topik::transport::InMemoryTransport;
 

@@ -54,3 +54,19 @@ pub trait Encoding<T> {
     /// Deserialize raw bytes received from the wire into a value.
     fn decode(bytes: Bytes) -> Result<T, TopikError>;
 }
+
+/// Encoding mapping for the dervice macro to satisfy
+///
+/// Encoding a payload type uses when a field is marked `#[payload]`
+///
+/// The derive macro knows no type names. It asks the compiler for
+/// `<FieldType as DefaultEncoding>::Encoding`, so the mapping lives here,
+/// next to the encodings themselves.
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` has no default payload encoding",
+    label = "no default encoding for this payload type",
+    note = "choose one explicitly: `#[payload(encoding = YourEncoding)]`"
+)]
+pub trait DefaultEncoding: Sized {
+    type Encoding: Encoding<Self>;
+}

@@ -2,7 +2,6 @@
 
 use bytes::Bytes;
 use topik::Topic;
-use topik::encoding::RawEncoding;
 use topik_core::__private::TopicWire;
 
 // multiple literals, multiple dynamic segments, literal in the middle

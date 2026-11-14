@@ -35,6 +35,7 @@ pub use topic::{Topic, TopicEnum};
 
 #[doc(hidden)]
 pub mod __private {
+    pub use crate::encoding::DefaultEncoding;
     pub use crate::segments::Segment;
     pub use crate::subscribe::SubscribeBuilder;
     pub use crate::topic::private::Sealed;

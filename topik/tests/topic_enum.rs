@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use bytes::Bytes;
-use topik::encoding::{F32Encoding, RawEncoding};
 use topik::protocol::{Mqtt, Nats};
 use topik::transport::InMemoryTransport;
 use topik::{Topic, TopicEnum, TopikClient};

@@ -3,7 +3,6 @@
 use bytes::Bytes;
 
 use topik::Topic;
-use topik::encoding::RawEncoding;
 use topik::segment::{BoolSegment, OnOff, OneZero, TrueFalse, YesNo};
 use topik_core::__private::TopicWire;
 

@@ -3,7 +3,6 @@
 use rumqttc::{Event, Packet, QoS};
 use testcontainers_modules::{mosquitto::Mosquitto, testcontainers::runners::AsyncRunner};
 use tokio::sync::OnceCell;
-use topik::encoding::F32Encoding;
 use topik::transport::rumqttc::MqttClient;
 use topik::{Topic, TopicEnum};
 

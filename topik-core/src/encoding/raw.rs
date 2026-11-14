@@ -1,6 +1,6 @@
 use bytes::Bytes;
 
-use super::Encoding;
+use super::{DefaultEncoding, Encoding};
 use crate::TopikError;
 
 /// Raw bytes encoding.
@@ -29,6 +29,10 @@ impl Encoding<Bytes> for RawEncoding {
     }
 }
 
+impl DefaultEncoding for Bytes {
+    type Encoding = RawEncoding;
+}
+
 /// UTF-8 string encoding.
 ///
 /// Use when the payload is a raw string.
@@ -52,4 +56,8 @@ impl Encoding<String> for StringEncoding {
     fn decode(bytes: Bytes) -> Result<String, TopikError> {
         String::from_utf8(bytes.into()).map_err(|e| TopikError::Encoding(Box::new(e)))
     }
+}
+
+impl DefaultEncoding for String {
+    type Encoding = StringEncoding;
 }

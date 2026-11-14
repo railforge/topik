@@ -1,4 +1,4 @@
-use super::Encoding;
+use super::{DefaultEncoding, Encoding};
 use bytes::Bytes;
 
 use crate::TopikError;
@@ -19,6 +19,10 @@ macro_rules! impl_numeric_encoding {
                 s.parse::<$ty>()
                     .map_err(|e| TopikError::Encoding(Box::new(e)))
             }
+        }
+
+        impl DefaultEncoding for $ty {
+            type Encoding = $name;
         }
     };
 }

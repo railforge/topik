@@ -1,4 +1,4 @@
-use super::Encoding;
+use super::{DefaultEncoding, Encoding};
 use crate::{BoolRepr, TopikError};
 use bytes::Bytes;
 use std::marker::PhantomData;
@@ -45,4 +45,8 @@ impl<R: BoolRepr> Encoding<bool> for BoolEncoding<R> {
             )))
         }
     }
+}
+
+impl DefaultEncoding for bool {
+    type Encoding = BoolEncoding<crate::TrueFalse>;
 }
