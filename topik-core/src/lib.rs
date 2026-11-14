@@ -26,10 +26,7 @@ pub use encoding::{
 };
 pub use error::TopikError;
 pub use protocol::{Mqtt, Nats, Protocol, Redis};
-pub use segments::{
-    BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, Segment, StandardBool, TrueFalse,
-    YesNo, YesNoBool,
-};
+pub use segments::{BoolRepr, BoolSegment, OnOff, OneZero, Segment, TrueFalse, YesNo};
 pub use subscribe::SubscribeBuilder;
 pub use topic::{Topic, TopicEnum};
 
