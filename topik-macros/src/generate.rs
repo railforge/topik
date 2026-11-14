@@ -26,7 +26,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
             ::std::borrow::Cow::Borrowed(#lit)
         },
         SegmentKind::Dynamic(ident) => quote! {
-            ::topik_core::__private::Segment::render(&self.#ident)
+            ::topik::__private::Segment::render(&self.#ident)
         },
     });
 
@@ -34,12 +34,12 @@ pub fn generate(input: TopicInput) -> TokenStream {
         SegmentKind::Literal(lit) => quote! {
             match parts.get(#i) {
                 Some(&#lit) => {}
-                Some(got) => return Err(::topik_core::TopikError::LiteralMismatch {
+                Some(got) => return Err(::topik::TopikError::LiteralMismatch {
                     position: #i,
                     expected: #lit.to_string(),
                     got: got.to_string(),
                 }),
-                None => return Err(::topik_core::TopikError::MissingSegment {
+                None => return Err(::topik::TopikError::MissingSegment {
                     position: #i,
                     topic: topic.to_string(),
                 }),
@@ -52,8 +52,8 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 .map(|f| &f.ty)
                 .expect("segment field not found");
             quote! {
-                let #ident = <#field_ty as ::topik_core::__private::Segment>::parse(
-                    parts.get(#i).ok_or(::topik_core::TopikError::MissingSegment {
+                let #ident = <#field_ty as ::topik::__private::Segment>::parse(
+                    parts.get(#i).ok_or(::topik::TopikError::MissingSegment {
                         position: #i,
                         topic: topic.to_string(),
                     })?
@@ -100,7 +100,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
         SegmentKind::Literal(lit) => quote! { #lit.to_string() },
         SegmentKind::Dynamic(ident) => quote! {
             match &self.#ident {
-                Some(v) => ::topik_core::__private::Segment::render(v).into_owned(),
+                Some(v) => ::topik::__private::Segment::render(v).into_owned(),
                 None => single.to_string(),
             }
         },
@@ -130,7 +130,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
             #(#builder_setters)*
         }
 
-        impl ::topik_core::__private::SubscribeBuilder for #builder_name {
+        impl ::topik::__private::SubscribeBuilder for #builder_name {
             fn build_pattern(&self, sep: char, single: &'static str) -> String {
                 [
                     #(#builder_pattern_segments,)*
@@ -139,15 +139,15 @@ pub fn generate(input: TopicInput) -> TokenStream {
             }
         }
 
-        impl ::topik_core::__private::Sealed for #name {}
+        impl ::topik::__private::Sealed for #name {}
 
-        impl ::topik_core::Topic for #name {
+        impl ::topik::Topic for #name {
             type Payload = #payload_ty;
             type Encoding = #encoding;
             const NAME: &'static str = #name_str;
         }
 
-        impl ::topik_core::__private::TopicWire for #name {
+        impl ::topik::__private::TopicWire for #name {
             type Key = #key_name;
             type SubscribeBuilder = #builder_name;
 
@@ -164,7 +164,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
             fn parse(
                 topic: &str,
                 sep: char,
-            ) -> Result<Self::Key, ::topik_core::TopikError> {
+            ) -> Result<Self::Key, ::topik::TopikError> {
                 let parts: Vec<&str> = topic.split(sep).collect();
                 #(#parse_stmts)*
                 Ok(#key_name {
@@ -210,7 +210,7 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
     let pattern_arms = input.variants.iter().map(|v| {
         let ty = &v.topic_ty;
         quote! {
-            <#ty as ::topik_core::__private::TopicWire>::wildcard_pattern(sep, single, multi)
+            <#ty as ::topik::__private::TopicWire>::wildcard_pattern(sep, single, multi)
         }
     });
 
@@ -218,12 +218,12 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
         let variant_name = &v.name;
         let ty = &v.topic_ty;
         quote! {
-            if let Ok(key) = <#ty as ::topik_core::__private::TopicWire>::parse(topic, sep) {
-                if let Ok(payload) = <#ty as ::topik_core::__private::TopicWire>::decode_payload(
-                    ::bytes::Bytes::copy_from_slice(payload)
+            if let Ok(key) = <#ty as ::topik::__private::TopicWire>::parse(topic, sep) {
+                if let Ok(payload) = <#ty as ::topik::__private::TopicWire>::decode_payload(
+                    ::topik::__private::Bytes::copy_from_slice(payload)
                 ) {
                     return Ok(#name::#variant_name(
-                        <#ty as ::topik_core::__private::TopicWire>::from_key_and_payload(key, payload)
+                        <#ty as ::topik::__private::TopicWire>::from_key_and_payload(key, payload)
                     ));
                 }
             }
@@ -231,7 +231,7 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
     });
 
     quote! {
-        impl ::topik_core::__private::TopicEnum for #name {
+        impl ::topik::__private::TopicEnum for #name {
             fn patterns(sep: char, single: &'static str, multi: &'static str) -> Vec<String> {
                 vec![
                     #(#pattern_arms,)*
@@ -242,10 +242,10 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
                 topic: &str,
                 payload: &[u8],
                 sep: char,
-            ) -> Result<Self, ::topik_core::TopikError> {
+            ) -> Result<Self, ::topik::TopikError> {
                 #(#try_parse_arms)*
 
-                Err(::topik_core::TopikError::ParseError {
+                Err(::topik::TopikError::ParseError {
                     topic: topic.to_string(),
                     reason: "no variant matched".to_string(),
                 })

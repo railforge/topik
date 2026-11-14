@@ -40,4 +40,10 @@ pub mod __private {
     pub use crate::topic::private::Sealed;
     pub use crate::topic::{TopicEnum, TopicWire};
     pub use crate::transport::{MessageStream, RawMessage, Transport};
+
+    // reexports
+    pub use bytes::Bytes;
+    pub use std::borrow::Cow;
+    pub use std::string::String;
+    pub use std::vec::Vec;
 }

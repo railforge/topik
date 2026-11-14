@@ -1,3 +1,4 @@
+use quote::format_ident;
 use syn::{
     Attribute, DeriveInput, Error, Fields, Ident, LitStr, Path, Result, Type, parse::ParseStream,
 };
@@ -149,7 +150,6 @@ const ENCODING_MAP: &[(&str, &str)] = &[
     ("i32", "I32Encoding"),
     ("i64", "I64Encoding"),
     ("String", "StringEncoding"),
-    ("bool", "BoolEncoding<TrueFalse>"),
     ("Bytes", "RawEncoding"),
 ];
 
@@ -159,11 +159,19 @@ fn infer_encoding(ty: &Type) -> Option<Path> {
         _ => return None,
     };
     let ident = path.segments.last()?.ident.to_string();
-    let encoding_str = ENCODING_MAP
+
+    if ident == "bool" {
+        return Some(syn::parse_quote!(
+            ::topik::encoding::BoolEncoding<::topik::segment::TrueFalse>
+        ));
+    }
+
+    let name = ENCODING_MAP
         .iter()
         .find(|(t, _)| *t == ident.as_str())
-        .map(|(_, e)| *e)?;
-    syn::parse_str(encoding_str).ok()
+        .map(|(_, e)| format_ident!("{}", e))?;
+
+    Some(syn::parse_quote!(::topik::encoding::#name))
 }
 
 fn parse_payload_attr(
