@@ -27,8 +27,8 @@ pub use encoding::{
 pub use error::TopikError;
 pub use protocol::{Mqtt, Nats, Protocol, Redis};
 pub use segments::{
-    BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, StandardBool, TrueFalse, YesNo,
-    YesNoBool,
+    BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, Segment, StandardBool, TrueFalse,
+    YesNo, YesNoBool,
 };
 pub use subscribe::SubscribeBuilder;
 pub use topic::{Topic, TopicEnum};
@@ -36,7 +36,6 @@ pub use topic::{Topic, TopicEnum};
 #[doc(hidden)]
 pub mod __private {
     pub use crate::encoding::DefaultEncoding;
-    pub use crate::segments::Segment;
     pub use crate::subscribe::SubscribeBuilder;
     pub use crate::topic::private::Sealed;
     pub use crate::topic::{TopicEnum, TopicWire};

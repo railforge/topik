@@ -26,7 +26,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
             ::std::borrow::Cow::Borrowed(#lit)
         },
         SegmentKind::Dynamic(ident) => quote! {
-            ::topik::__private::Segment::render(&self.#ident)
+            ::topik::segment::Segment::render(&self.#ident)
         },
     });
 
@@ -52,7 +52,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 .map(|f| &f.ty)
                 .expect("segment field not found");
             quote! {
-                let #ident = <#field_ty as ::topik::__private::Segment>::parse(
+                let #ident = <#field_ty as ::topik::segment::Segment>::parse(
                     parts.get(#i).ok_or(::topik::TopikError::MissingSegment {
                         position: #i,
                         topic: topic.to_string(),
@@ -100,7 +100,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
         SegmentKind::Literal(lit) => quote! { #lit.to_string() },
         SegmentKind::Dynamic(ident) => quote! {
             match &self.#ident {
-                Some(v) => ::topik::__private::Segment::render(v).into_owned(),
+                Some(v) => ::topik::segment::Segment::render(v).into_owned(),
                 None => single.to_string(),
             }
         },

@@ -1,15 +1,63 @@
 use std::borrow::Cow;
+use std::marker::PhantomData;
 
 use crate::TopikError;
 
-/// Trait for types that can appear as segments in a topic path.
+/// A single typed part of a topic name.
 ///
-/// Implemented for common primitives out of the box. Custom types
-/// can implement this manually, or use the `#[derive(TopicSegment)]`
-/// macro (coming in `topik-macros`).
+/// A topic is a string made of ordered parts joined by a separator.
+/// (e.g. `hello/world/123` with `/` being the separator.)
+/// These parts often represent fields of a certain type.
 ///
-/// This trait is used internally by the `Topic` derive macro to render
-/// and parse topic strings. Users rarely interact with it directly.
+/// With `Segment`, we refer to a typed representation of such part.
+///
+/// This trait allows implementing segments for custom types.
+///
+/// Use it to implement your own custom types. A custom type must implement
+/// `Debug`, `Clone`, `Send` and `'static` to be able to be used as a field
+/// of a `#[derive(Topic)]` struct.
+///
+/// # Example
+///
+/// ```
+/// use std::borrow::Cow;
+/// use topik_core::{Segment, TopikError};
+///
+/// #[derive(Debug, Clone, PartialEq)]
+/// enum Room {
+///     Kitchen,
+///     Garage,
+/// }
+///
+/// impl Segment for Room {
+///     fn render(&self) -> Cow<'_, str> {
+///         match self {
+///             Room::Kitchen => Cow::Borrowed("kitchen"),
+///             Room::Garage => Cow::Borrowed("garage"),
+///         }
+///     }
+///
+///     fn parse(s: &str) -> Result<Self, TopikError> {
+///         match s {
+///             "kitchen" => Ok(Room::Kitchen),
+///             "garage" => Ok(Room::Garage),
+///             _ => Err(TopikError::ParseError {
+///                 topic: s.to_string(),
+///                 reason: format!("expected 'kitchen' or 'garage', got '{s}'"),
+///             }),
+///         }
+///     }
+/// }
+///
+/// assert_eq!(Room::Kitchen.render(), "kitchen");
+/// assert_eq!(Room::parse("garage").unwrap(), Room::Garage);
+/// assert!(Room::parse("attic").is_err());
+/// ```
+/// # Provided implementations
+///
+/// `u8`, `u16`, `u32`, `u64`, `i32`, `i64`, `String`, [`BoolSegment`] for
+/// booleans with a chosen text form, and `uuid::Uuid` with the `uuid` feature.
+///
 pub trait Segment: Sized {
     /// Render this value as a topic segment string.
     fn render(&self) -> Cow<'_, str>;
@@ -18,83 +66,28 @@ pub trait Segment: Sized {
     fn parse(s: &str) -> Result<Self, TopikError>;
 }
 
-impl Segment for u8 {
-    fn render(&self) -> Cow<'_, str> {
-        Cow::Owned(self.to_string())
-    }
+macro_rules! impl_segment_for_number {
+    ($($ty:ty),+ $(,)?) => {
+        $(
+            impl Segment for $ty {
+                fn render(&self) -> Cow<'_, str> {
+                    Cow::Owned(self.to_string())
+                }
 
-    fn parse(s: &str) -> Result<Self, TopikError> {
-        s.parse().map_err(|_| TopikError::ParseError {
-            topic: s.to_string(),
-            reason: format!("expected u8, got '{}'", s),
-        })
-    }
+                fn parse(s: &str) -> Result<Self, TopikError> {
+                    s.parse().map_err(|_| TopikError::ParseError {
+                        topic: s.to_string(),
+                        reason: format!("expected {}, got '{}'", stringify!($ty), s),
+                    })
+                }
+            }
+        )+
+    };
 }
 
-impl Segment for u16 {
-    fn render(&self) -> Cow<'_, str> {
-        Cow::Owned(self.to_string())
-    }
-
-    fn parse(s: &str) -> Result<Self, TopikError> {
-        s.parse().map_err(|_| TopikError::ParseError {
-            topic: s.to_string(),
-            reason: format!("expected u16, got '{}'", s),
-        })
-    }
-}
-
-impl Segment for u32 {
-    fn render(&self) -> Cow<'_, str> {
-        Cow::Owned(self.to_string())
-    }
-
-    fn parse(s: &str) -> Result<Self, TopikError> {
-        s.parse().map_err(|_| TopikError::ParseError {
-            topic: s.to_string(),
-            reason: format!("expected u32, got '{}'", s),
-        })
-    }
-}
-
-impl Segment for u64 {
-    fn render(&self) -> Cow<'_, str> {
-        Cow::Owned(self.to_string())
-    }
-
-    fn parse(s: &str) -> Result<Self, TopikError> {
-        s.parse().map_err(|_| TopikError::ParseError {
-            topic: s.to_string(),
-            reason: format!("expected u64, got '{}'", s),
-        })
-    }
-}
-
-impl Segment for i32 {
-    fn render(&self) -> Cow<'_, str> {
-        Cow::Owned(self.to_string())
-    }
-
-    fn parse(s: &str) -> Result<Self, TopikError> {
-        s.parse().map_err(|_| TopikError::ParseError {
-            topic: s.to_string(),
-            reason: format!("expected i32, got '{}'", s),
-        })
-    }
-}
-
-impl Segment for i64 {
-    fn render(&self) -> Cow<'_, str> {
-        Cow::Owned(self.to_string())
-    }
-
-    fn parse(s: &str) -> Result<Self, TopikError> {
-        s.parse().map_err(|_| TopikError::ParseError {
-            topic: s.to_string(),
-            reason: format!("expected i64, got '{}'", s),
-        })
-    }
-}
+impl_segment_for_number!(
+    u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
+);
 
 impl Segment for String {
     fn render(&self) -> Cow<'_, str> {
@@ -106,18 +99,14 @@ impl Segment for String {
     }
 }
 
-/// Defines the string representation of a boolean topic segment.
-///
-/// Implement this on a unit struct to define what strings represent
-/// `true` and `false` in your topic. This is useful for legacy systems
-/// that use non-standard boolean representations.
+/// Defines the string representation for a boolean type.
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```
 /// use topik_core::{BoolRepr, BoolSegment, Segment};
 ///
-/// // your legacy system uses "active" and "inactive"
+/// // a legacy system using "active" / "inactive"
 /// struct ActiveInactive;
 ///
 /// impl BoolRepr for ActiveInactive {
@@ -125,75 +114,23 @@ impl Segment for String {
 ///     const FALSE: &'static str = "inactive";
 /// }
 ///
-/// type ActiveFlag = BoolSegment<ActiveInactive>;
+/// let flag = BoolSegment::<ActiveInactive>::from(true);
+/// assert_eq!(flag.render(), "active");
 ///
-/// // renders as "active" on the wire
-/// let active = ActiveFlag::from(true);
-/// assert_eq!(active.render(), "active");
-///
-/// // parses "inactive" back to false
-/// let inactive = ActiveFlag::parse("inactive").unwrap();
-/// assert_eq!(inactive.as_bool(), false);
-/// ```
-///
-/// # Provided implementations
-///
-/// Topik ships common representations out of the box:
-///
-/// ```ignore
-/// use topik_core::{StandardBool, BinaryBool, YesNoBool, OnOffBool};
-///
-/// // "true" / "false" default, most common
-/// type MyBool = StandardBool;
-///
-/// // "1" / "0" common in industrial/legacy systems
-/// type MyFlag = BinaryBool;
-///
-/// // "yes" / "no"
-/// type MyAnswer = YesNoBool;
-///
-/// // "on" / "off" common in IoT/home automation
-/// type MySwitch = OnOffBool;
+/// let parsed = BoolSegment::<ActiveInactive>::parse("inactive").unwrap();
+/// assert!(!parsed.as_bool());
 /// ```
 pub trait BoolRepr {
     const TRUE: &'static str;
     const FALSE: &'static str;
 }
 
-/// A boolean topic segment with a configurable string representation.
+/// A boolean topic segment typed as a [`BoolRepr`].
 ///
-/// The representation is defined by a [`BoolRepr`] implementation,
-/// making the true/false strings part of the type.
-///
-/// # Example
-///
-/// ```ignore
-/// use topik_core::{BoolSegment, BoolRepr, Segment};
-///
-/// struct OnOff;
-/// impl BoolRepr for OnOff {
-///     const TRUE: &'static str = "on";
-///     const FALSE: &'static str = "off";
-/// }
-///
-/// #[derive(Topic)]
-/// #[topic(segments("home", room, "light", state))]
-/// struct LightState {
-///     room: String,
-///     state: BoolSegment<OnOff>,
-/// }
-///
-/// // subscriber receives typed state
-/// client.subscribe::<LightState>(|msg| async move {
-///     if msg.state.as_bool() {
-///         println!("light in {} is on", msg.room);
-///     }
-/// }).await?;
-/// ```
-pub struct BoolSegment<R: BoolRepr>(bool, std::marker::PhantomData<R>);
+/// Default: [`StandardBool`]
+pub struct BoolSegment<R: BoolRepr>(bool, PhantomData<R>);
 
 impl<R: BoolRepr> BoolSegment<R> {
-    /// Returns the inner bool value.
     pub fn as_bool(&self) -> bool {
         self.0
     }
@@ -201,7 +138,7 @@ impl<R: BoolRepr> BoolSegment<R> {
 
 impl<R: BoolRepr> From<bool> for BoolSegment<R> {
     fn from(b: bool) -> Self {
-        BoolSegment(b, std::marker::PhantomData)
+        BoolSegment(b, PhantomData)
     }
 }
 
@@ -213,7 +150,7 @@ impl<R: BoolRepr> std::fmt::Debug for BoolSegment<R> {
 
 impl<R: BoolRepr> Clone for BoolSegment<R> {
     fn clone(&self) -> Self {
-        BoolSegment(self.0, std::marker::PhantomData)
+        BoolSegment(self.0, PhantomData)
     }
 }
 
@@ -228,9 +165,9 @@ impl<R: BoolRepr> Segment for BoolSegment<R> {
 
     fn parse(s: &str) -> Result<Self, TopikError> {
         if s == R::TRUE {
-            Ok(BoolSegment(true, std::marker::PhantomData))
+            Ok(BoolSegment(true, PhantomData))
         } else if s == R::FALSE {
-            Ok(BoolSegment(false, std::marker::PhantomData))
+            Ok(BoolSegment(false, PhantomData))
         } else {
             Err(TopikError::ParseError {
                 topic: s.to_string(),
@@ -240,8 +177,6 @@ impl<R: BoolRepr> Segment for BoolSegment<R> {
     }
 }
 
-// --- Provided BoolRepr implementations ---
-
 /// Standard boolean representation: `"true"` / `"false"`.
 pub struct TrueFalse;
 impl BoolRepr for TrueFalse {
@@ -250,7 +185,6 @@ impl BoolRepr for TrueFalse {
 }
 
 /// Binary boolean representation: `"1"` / `"0"`.
-/// Common in industrial and legacy systems.
 pub struct OneZero;
 impl BoolRepr for OneZero {
     const TRUE: &'static str = "1";
@@ -265,16 +199,13 @@ impl BoolRepr for YesNo {
 }
 
 /// On/Off boolean representation: `"on"` / `"off"`.
-/// Common in IoT and home automation systems.
 pub struct OnOff;
 impl BoolRepr for OnOff {
     const TRUE: &'static str = "on";
     const FALSE: &'static str = "off";
 }
 
-// --- Type aliases for convenience ---
-
-/// Boolean segment using `"true"` / `"false"`. The default choice.
+/// Boolean segment using `"true"` / `"false"`. (default)
 pub type StandardBool = BoolSegment<TrueFalse>;
 
 /// Boolean segment using `"1"` / `"0"`.

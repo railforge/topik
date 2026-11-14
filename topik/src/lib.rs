@@ -87,8 +87,8 @@ pub mod encoding {
 
 pub mod segment {
     pub use topik_core::{
-        BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, StandardBool, TrueFalse,
-        YesNo, YesNoBool,
+        BinaryBool, BoolRepr, BoolSegment, OnOff, OnOffBool, OneZero, Segment, StandardBool,
+        TrueFalse, YesNo, YesNoBool,
     };
 }
 
