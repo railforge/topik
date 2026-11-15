@@ -221,7 +221,6 @@ impl<P: Protocol + Send + Sync> Transport for InMemoryTransport<P> {
 mod tests {
     use super::*;
 
-    // --- MQTT ---
     #[test]
     fn mqtt_exact_match() {
         assert!(matches_pattern(

@@ -18,7 +18,6 @@
 mod example {
     use rumqttc::{Event, Packet, QoS};
     use topik::prelude::*;
-    use topik::transport::rumqttc::MqttClient;
 
     #[derive(Topic, Debug)]
     #[topic(segments("sensors", device_id, "temperature"))]

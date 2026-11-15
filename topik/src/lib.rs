@@ -48,6 +48,8 @@
 //! ```
 
 mod client;
+pub mod inmemory;
+pub mod mqtt;
 mod subscriber;
 
 pub use client::TopikClient;
@@ -59,20 +61,17 @@ pub use topik_core::{Topic, TopicEnum, TopikError};
 pub use topik_macros::{Topic, TopicEnum};
 
 pub mod prelude {
-    pub use crate::TopikClient;
     pub use crate::encoding::{
         BoolEncoding, F32Encoding, F64Encoding, I32Encoding, I64Encoding, RawEncoding,
         StringEncoding, U8Encoding, U16Encoding, U32Encoding, U64Encoding,
     };
+    pub use crate::inmemory::InMemoryTransport;
+    pub use crate::mqtt::Mqtt;
     pub use crate::segment::{BoolRepr, BoolSegment, OnOff, OneZero, TrueFalse, YesNo};
-    pub use crate::subscriber::{EnumSubscriber, Subscriber};
-    pub use crate::transport::InMemoryTransport;
-    pub use crate::transport::Mqtt;
-    pub use topik_core::{Topic, TopicEnum, TopikError};
-    pub use topik_macros::{Topic, TopicEnum};
+    pub use crate::{EnumSubscriber, Subscriber, Topic, TopicEnum, TopikClient, TopikError};
 
     #[cfg(feature = "rumqttc")]
-    pub use crate::transport::{MqttTransport, MqttTransportBuilder};
+    pub use crate::mqtt::rumqttc::{MqttClient, MqttTransport, MqttTransportBuilder};
 }
 
 pub mod encoding {
@@ -86,15 +85,13 @@ pub mod segment {
     pub use topik_core::{BoolRepr, BoolSegment, OnOff, OneZero, Segment, TrueFalse, YesNo};
 }
 
-pub mod transport;
-
 pub mod protocol {
-    pub use crate::transport::Mqtt;
     pub use topik_core::protocol::Protocol;
 }
 
-#[cfg(feature = "rumqttc")]
-pub use transport::{MqttTransport, MqttTransportBuilder};
+pub mod transport {
+    pub use topik_core::transport::{MessageStream, RawMessage, Transport};
+}
 
 #[doc(hidden)]
 pub mod __private {

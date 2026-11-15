@@ -3,7 +3,7 @@
 use bytes::Bytes;
 
 use topik::Topic;
-use topik::protocol::Mqtt;
+use topik::mqtt::Mqtt;
 use topik::segment::{BoolSegment, OnOff, OneZero, TrueFalse, YesNo};
 use topik_core::__private::TopicWire;
 

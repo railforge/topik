@@ -1,8 +1,8 @@
 use bytes::Bytes;
 use topik::Topic;
 use topik::TopikClient;
-use topik::protocol::Mqtt;
-use topik::transport::InMemoryTransport;
+use topik::inmemory::InMemoryTransport;
+use topik::mqtt::Mqtt;
 
 #[derive(Topic, Debug, PartialEq)]
 #[topic(segments("sensors", device_id, "temperature"))]

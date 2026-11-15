@@ -6,7 +6,7 @@ use topik::encoding::{
     BoolEncoding, I32Encoding, I64Encoding, RawEncoding, StringEncoding, U8Encoding, U16Encoding,
     U32Encoding, U64Encoding,
 };
-use topik::protocol::Mqtt;
+use topik::mqtt::Mqtt;
 use topik::segment::OneZero;
 use topik_core::__private::TopicWire;
 use topik_core::Encoding;

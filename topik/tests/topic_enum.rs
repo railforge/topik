@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
 use bytes::Bytes;
-use topik::protocol::Mqtt;
-use topik::transport::InMemoryTransport;
+use topik::inmemory::InMemoryTransport;
+use topik::mqtt::Mqtt;
 use topik::{Topic, TopicEnum, TopikClient};
 
 #[derive(Topic, Debug)]

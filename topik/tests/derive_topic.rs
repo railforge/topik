@@ -1,7 +1,7 @@
 use bytes::Bytes;
 
 use topik::Topic;
-use topik::protocol::Mqtt;
+use topik::mqtt::Mqtt;
 use topik_core::__private::TopicWire;
 
 #[derive(Topic)]
