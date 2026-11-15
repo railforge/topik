@@ -1,9 +1,6 @@
 /// Defines the wire format conventions for a pub/sub protocol.
 ///
 /// Each protocol has its own topic separator and wildcard tokens.
-/// Implementing this trait on a zero-sized marker type is how topik
-/// knows how to render topic strings and subscription patterns for
-/// a given broker.
 ///
 /// # Example
 ///
@@ -21,16 +18,15 @@
 /// ).await?;
 /// ```
 pub trait Protocol: Send + Sync + 'static {
-    /// The character used to separate topic segments on the wire.
-    ///
+    /// Character that separates segements of a topic.
     /// ```text
-    /// MQTT  -> '/'   sensors/42/temperature
-    /// NATS  -> '.'   sensors.42.temperature
-    /// Redis -> ':'   sensors:42:temperature
+    /// MQTT: '/'   sensors/42/temperature
+    /// NATS: '.'   sensors.42.temperature
+    /// Redis: ':'   sensors:42:temperature
     /// ```
     const SEPARATOR: char;
 
-    /// Wildcard token matching exactly one topic segment.
+    /// Exactly one wildcard character.
     ///
     /// ```text
     /// MQTT  -> "+"   sensors/+/temperature
@@ -39,7 +35,7 @@ pub trait Protocol: Send + Sync + 'static {
     /// ```
     const SINGLE_WILDCARD: &'static str;
 
-    /// Wildcard token matching one or more trailing segments.
+    /// One or more wildcard character.
     ///
     /// ```text
     /// MQTT  -> "#"   sensors/#
@@ -50,9 +46,6 @@ pub trait Protocol: Send + Sync + 'static {
 }
 
 /// MQTT protocol marker.
-///
-/// Uses `/` as separator, `+` for single-level wildcards, `#` for
-/// multi-level wildcards.
 ///
 /// Compatible with MQTT 3.1.1 and MQTT 5.0.
 pub struct Mqtt;
@@ -65,7 +58,6 @@ impl Protocol for Mqtt {
 
 /// NATS protocol marker.
 ///
-/// Uses `.` as separator, `*` for single-token wildcards, `>` for
 /// multi-token wildcards.
 pub struct Nats;
 
@@ -76,9 +68,7 @@ impl Protocol for Nats {
 }
 
 /// Redis pub/sub protocol marker.
-///
-/// Uses `:` as separator. Redis uses glob-style pattern matching,
-/// `*` matches any sequence of characters within a segment.
+//
 /// There is no true multi-level wildcard; `*` serves both roles.
 pub struct Redis;
 
