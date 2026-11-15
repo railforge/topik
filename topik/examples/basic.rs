@@ -8,10 +8,8 @@ use topik::prelude::*;
 
 /// A temperature reading from a sensor device.
 ///
-/// Renders as:
-///   MQTT  -> "sensors/{device_id}/temperature"
-///   NATS  -> "sensors.{device_id}.temperature"
-///   Redis -> "sensors:{device_id}:temperature"
+/// Example:
+///   MQTT: "sensors/{device_id}/temperature"
 #[derive(Topic, Debug)]
 #[topic(segments("sensors", device_id, "temperature"))]
 pub struct TemperatureReading {

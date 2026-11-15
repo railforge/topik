@@ -2,7 +2,7 @@
 
 use bytes::Bytes;
 use topik::Topic;
-use topik::protocol::{Mqtt, Nats};
+use topik::protocol::Mqtt;
 use topik_core::__private::TopicWire;
 
 // multiple literals, multiple dynamic segments, literal in the middle
@@ -41,16 +41,6 @@ fn render_literal_in_middle_mqtt() {
         data: Bytes::new(),
     };
     assert_eq!(topic.render::<Mqtt>(), "factory/v2/99/readings/temperature");
-}
-
-#[test]
-fn render_literal_in_middle_nats() {
-    let topic = FactoryReading {
-        device_id: 99,
-        kind: "humidity".to_string(),
-        data: Bytes::new(),
-    };
-    assert_eq!(topic.render::<Nats>(), "factory.v2.99.readings.humidity");
 }
 
 #[test]

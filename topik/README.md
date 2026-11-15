@@ -104,7 +104,6 @@ See what gets sent to the broker:
 ```rust
 println!("{}", client.display(&reading));
 // MQTT  -> "factory/sensors/42/temperature"
-// NATS  -> "factory.sensors.42.temperature"
 ```
 
 ## Subscribing

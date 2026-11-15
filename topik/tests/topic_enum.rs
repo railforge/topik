@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use bytes::Bytes;
-use topik::protocol::{Mqtt, Nats};
+use topik::protocol::Mqtt;
 use topik::transport::InMemoryTransport;
 use topik::{Topic, TopicEnum, TopikClient};
 
@@ -36,8 +36,6 @@ enum SensorTopics {
     Reboot(RebootCommand),
 }
 
-// --- patterns() ---
-
 #[test]
 fn patterns_mqtt() {
     let patterns = SensorTopics::patterns::<Mqtt>();
@@ -46,16 +44,6 @@ fn patterns_mqtt() {
     assert_eq!(patterns[1], "sensors/+/humidity");
     assert_eq!(patterns[2], "devices/+/reboot");
 }
-
-#[test]
-fn patterns_nats() {
-    let patterns = SensorTopics::patterns::<Nats>();
-    assert_eq!(patterns[0], "sensors.*.temperature");
-    assert_eq!(patterns[1], "sensors.*.humidity");
-    assert_eq!(patterns[2], "devices.*.reboot");
-}
-
-// --- try_from_raw() ---
 
 #[test]
 fn try_from_raw_temperature() {
@@ -85,15 +73,6 @@ fn try_from_raw_no_match() {
         Err(topik_core::TopikError::ParseError { .. })
     ));
 }
-
-#[test]
-fn try_from_raw_nats_separator() {
-    let payload = 23.5f32.to_string();
-    let result = SensorTopics::try_from_raw::<Nats>("sensors.42.temperature", payload.as_bytes());
-    assert!(matches!(result, Ok(SensorTopics::Temperature(msg)) if msg.device_id == 42));
-}
-
-// --- subscribe_many ---
 
 #[tokio::test]
 async fn subscribe_many_receives_all_variants() {
@@ -130,37 +109,6 @@ async fn subscribe_many_receives_all_variants() {
     assert!(matches!(msg1, SensorTopics::Temperature(msg) if msg.device_id == 1));
     assert!(matches!(msg2, SensorTopics::Humidity(msg) if msg.device_id == 2));
     assert!(matches!(msg3, SensorTopics::Reboot(msg) if msg.device_id == 3));
-}
-
-#[tokio::test]
-async fn subscribe_many_mqtt_and_nats() {
-    // same enum works with any protocol
-    let mqtt_client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
-    let nats_client = TopikClient::new(InMemoryTransport::<Nats>::new());
-
-    let mut mqtt_sub = mqtt_client.subscribe_many::<SensorTopics>().await.unwrap();
-    let mut nats_sub = nats_client.subscribe_many::<SensorTopics>().await.unwrap();
-
-    mqtt_client
-        .publish(TemperatureReading {
-            device_id: 1,
-            data: 20.0,
-        })
-        .await
-        .unwrap();
-    nats_client
-        .publish(TemperatureReading {
-            device_id: 2,
-            data: 21.0,
-        })
-        .await
-        .unwrap();
-
-    let mqtt_msg = mqtt_sub.next().await.unwrap();
-    let nats_msg = nats_sub.next().await.unwrap();
-
-    assert!(matches!(mqtt_msg, SensorTopics::Temperature(msg) if msg.device_id == 1));
-    assert!(matches!(nats_msg, SensorTopics::Temperature(msg) if msg.device_id == 2));
 }
 
 #[tokio::test]

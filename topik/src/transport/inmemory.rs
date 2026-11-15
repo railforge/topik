@@ -26,9 +26,6 @@
 //! ```ignore
 //! // MQTT: `+` single level, `#` multi level
 //! let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
-//!
-//! // NATS: `*` single token, `>` multi token
-//! let client = TopikClient::new(InMemoryTransport::<Nats>::new());
 //! ```
 //!
 //! This means your tests verify the exact same matching behavior
@@ -140,9 +137,6 @@ pub struct InMemoryTransport<P: Protocol> {
 
 impl<P: Protocol> InMemoryTransport<P> {
     /// Create a new in-memory transport.
-    ///
-    /// The protocol type parameter determines separator and wildcard
-    /// semantics. Use `Mqtt`, `Nats`, or `Redis` from `topik::protocol`.
     pub fn new() -> Self {
         let (sender, _) = broadcast::channel(CHANNEL_CAPACITY);
         InMemoryTransport {
@@ -296,96 +290,6 @@ mod tests {
             '/',
             "+",
             "#"
-        ));
-    }
-
-    // --- NATS ---
-    #[test]
-    fn nats_single_wildcard() {
-        assert!(matches_pattern(
-            "sensors.42.temperature",
-            "sensors.*.temperature",
-            '.',
-            "*",
-            ">"
-        ));
-    }
-
-    #[test]
-    fn nats_multi_wildcard() {
-        assert!(matches_pattern(
-            "sensors.42.temperature",
-            "sensors.>",
-            '.',
-            "*",
-            ">"
-        ));
-    }
-
-    #[test]
-    fn nats_multi_wildcard_deep() {
-        assert!(matches_pattern(
-            "sensors.42.temperature.raw",
-            "sensors.>",
-            '.',
-            "*",
-            ">"
-        ));
-    }
-
-    #[test]
-    fn nats_multiple_wildcards() {
-        assert!(matches_pattern(
-            "sensors.42.temperature",
-            "sensors.*.*",
-            '.',
-            "*",
-            ">"
-        ));
-    }
-
-    #[test]
-    fn nats_no_match() {
-        assert!(!matches_pattern(
-            "sensors.42.temperature",
-            "commands.*.*",
-            '.',
-            "*",
-            ">"
-        ));
-    }
-
-    // --- Redis ---
-    #[test]
-    fn redis_single_wildcard() {
-        assert!(matches_pattern(
-            "sensors:42:temperature",
-            "sensors:*:temperature",
-            ':',
-            "*",
-            "*"
-        ));
-    }
-
-    #[test]
-    fn redis_wildcard_no_match() {
-        assert!(!matches_pattern(
-            "sensors:42:temperature",
-            "sensors:*:humidity",
-            ':',
-            "*",
-            "*"
-        ));
-    }
-
-    #[test]
-    fn redis_exact() {
-        assert!(matches_pattern(
-            "sensors:42:temperature",
-            "sensors:42:temperature",
-            ':',
-            "*",
-            "*"
         ));
     }
 }

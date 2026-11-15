@@ -1,7 +1,7 @@
 use bytes::Bytes;
 use topik::Topic;
 use topik::TopikClient;
-use topik::protocol::{Mqtt, Nats};
+use topik::protocol::Mqtt;
 use topik::transport::InMemoryTransport;
 
 #[derive(Topic, Debug, PartialEq)]
@@ -19,8 +19,6 @@ struct DeviceActive {
     #[payload]
     data: Bytes,
 }
-
-// --- Basic publish/subscribe ---
 
 #[tokio::test]
 async fn publish_subscribe_mqtt() {
@@ -40,27 +38,6 @@ async fn publish_subscribe_mqtt() {
     assert_eq!(msg.device_id, 42);
     assert_eq!(msg.data, Bytes::from("23.5"));
 }
-
-#[tokio::test]
-async fn publish_subscribe_nats() {
-    let client = TopikClient::new(InMemoryTransport::<Nats>::new());
-
-    let mut sub = client.subscribe::<TemperatureReading>().await.unwrap();
-
-    client
-        .publish(TemperatureReading {
-            device_id: 7,
-            data: Bytes::from("18.2"),
-        })
-        .await
-        .unwrap();
-
-    let msg = sub.next().await.unwrap();
-    assert_eq!(msg.device_id, 7);
-    assert_eq!(msg.data, Bytes::from("18.2"));
-}
-
-// --- Multiple subscribers ---
 
 #[tokio::test]
 async fn multiple_subscribers_receive_same_message() {
@@ -83,8 +60,6 @@ async fn multiple_subscribers_receive_same_message() {
     assert_eq!(msg1.device_id, 42);
     assert_eq!(msg2.device_id, 42);
 }
-
-// --- Multiple topic types ---
 
 #[tokio::test]
 async fn subscribe_to_different_topics() {
@@ -116,8 +91,6 @@ async fn subscribe_to_different_topics() {
     assert_eq!(active.device_id, 2);
 }
 
-// --- Cloned client ---
-
 #[tokio::test]
 async fn cloned_client_shares_transport() {
     let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
@@ -137,8 +110,6 @@ async fn cloned_client_shares_transport() {
     let msg = sub.next().await.unwrap();
     assert_eq!(msg.device_id, 99);
 }
-
-// --- Wildcard matching ---
 
 #[tokio::test]
 async fn wildcard_matches_any_device_id() {
@@ -169,8 +140,6 @@ async fn wildcard_matches_any_device_id() {
     assert_eq!(msg1.device_id, 1);
     assert_eq!(msg2.device_id, 2);
 }
-
-// --- Unsubscribe ---
 
 #[tokio::test]
 async fn unsubscribe_stops_receiving() {

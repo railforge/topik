@@ -11,8 +11,6 @@ use topik::segment::OneZero;
 use topik_core::__private::TopicWire;
 use topik_core::Encoding;
 
-// --- StringEncoding topic ---
-
 #[derive(Topic)]
 #[topic(segments("sensor", device_id))]
 struct StringSensor {
@@ -20,8 +18,6 @@ struct StringSensor {
     #[payload]
     data: String,
 }
-
-// --- RawEncoding topic ---
 
 #[derive(Topic)]
 #[topic(segments("sensor", device_id))]
@@ -31,8 +27,6 @@ struct RawSensor {
     data: Bytes,
 }
 
-// --- U64Encoding topic ---
-
 #[derive(Topic)]
 #[topic(segments("counter", device_id))]
 struct CounterReading {
@@ -41,8 +35,6 @@ struct CounterReading {
     data: u64,
 }
 
-// --- BoolEncoding topic ---
-
 #[derive(Topic)]
 #[topic(segments("device", device_id, "active"))]
 struct DeviceActive {
@@ -50,8 +42,6 @@ struct DeviceActive {
     #[payload(encoding = BoolEncoding<OneZero>)]
     data: bool,
 }
-
-// --- StringEncoding tests ---
 
 #[test]
 fn string_encoding_encode() {
@@ -79,8 +69,6 @@ fn string_encoding_from_key_and_payload() {
     assert_eq!(msg.data, "hello world");
 }
 
-// --- RawEncoding tests ---
-
 #[test]
 fn raw_encoding_encode() {
     let bytes = Bytes::from("raw");
@@ -103,8 +91,6 @@ fn raw_encoding_from_key_and_payload() {
     assert_eq!(msg.device_id, 42);
     assert_eq!(msg.data, payload);
 }
-
-// --- Numeric encoding tests ---
 
 #[test]
 fn u64_encoding_encode() {
@@ -195,8 +181,6 @@ fn i64_encoding_decode_invalid() {
     let err = I64Encoding::decode(Bytes::from("notanumber")).unwrap_err();
     assert!(matches!(err, topik_core::TopikError::Encoding(_)));
 }
-
-// --- BoolEncoding tests ---
 
 #[test]
 fn bool_encoding_onezero_encode_true() {

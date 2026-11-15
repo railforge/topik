@@ -1,5 +1,6 @@
 #[cfg(feature = "rumqttc")]
 mod transport {
+    use crate::transport::Mqtt;
     use std::sync::{Arc, Mutex};
 
     use bytes::Bytes;
@@ -7,8 +8,8 @@ mod transport {
     use std::time::Duration;
     use tokio::sync::mpsc;
     use topik_core::__private::Transport;
+    use topik_core::Protocol;
     use topik_core::TopikError;
-    use topik_core::protocol::{Mqtt, Protocol};
     use topik_core::transport::{MessageStream, RawMessage};
 
     use crate::transport::inmemory::matches_pattern;
@@ -248,11 +249,11 @@ mod transport {
 
 #[cfg(feature = "rumqttc")]
 mod client {
+    use crate::transport::Mqtt;
     use bytes::Bytes;
     use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
     use std::time::Duration;
     use topik_core::__private::{TopicEnum, TopicWire};
-    use topik_core::protocol::Mqtt;
     use topik_core::{Encoding, TopikError};
 
     /// Builder for [`MqttClient`].

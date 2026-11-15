@@ -1,9 +1,8 @@
 use bytes::Bytes;
 
 use topik::Topic;
-use topik::protocol::{Mqtt, Redis};
+use topik::protocol::Mqtt;
 use topik_core::__private::TopicWire;
-use topik_core::Nats;
 
 #[derive(Topic)]
 #[topic(segments("sensor", device_id))]
@@ -14,30 +13,12 @@ struct TemperatureSensor {
 }
 
 #[test]
-fn render_nats_separator() {
-    let topic = TemperatureSensor {
-        device_id: 42,
-        data: Bytes::new(),
-    };
-    assert_eq!(topic.render::<Nats>(), "sensor.42");
-}
-
-#[test]
 fn render_mqtt_separator() {
     let topic = TemperatureSensor {
         device_id: 42,
         data: Bytes::new(),
     };
     assert_eq!(topic.render::<Mqtt>(), "sensor/42");
-}
-
-#[test]
-fn render_redis_separator() {
-    let topic = TemperatureSensor {
-        device_id: 42,
-        data: Bytes::new(),
-    };
-    assert_eq!(topic.render::<Redis>(), "sensor:42");
 }
 
 #[test]
@@ -68,11 +49,6 @@ fn parse_missing_segment() {
 fn parse_invalid_segment() {
     let err = TemperatureSensor::parse::<Mqtt>("sensor/notanumber").unwrap_err();
     assert!(matches!(err, topik_core::TopikError::ParseError { .. }));
-}
-
-#[test]
-fn wildcard_pattern_nats() {
-    assert_eq!(TemperatureSensor::wildcard_pattern::<Nats>(), "sensor.*");
 }
 
 #[test]
