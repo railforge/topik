@@ -37,7 +37,7 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
         loop {
             let raw = self.stream.next().await?;
 
-            let key = match M::parse::<T::Protocol>(&raw.topic) {
+            let key = match M::parse::<T::Syntax>(&raw.topic) {
                 Ok(key) => key,
                 Err(_) => continue,
             };
@@ -106,7 +106,7 @@ impl<E: TopicEnum> EnumSubscriber<E> {
             let tx = tx.clone();
             tokio::spawn(async move {
                 while let Some(raw) = stream.next().await {
-                    if let Ok(event) = E::try_from_raw::<T::Protocol>(&raw.topic, &raw.payload)
+                    if let Ok(event) = E::try_from_raw::<T::Syntax>(&raw.topic, &raw.payload)
                         && tx.send(event).await.is_err()
                     {
                         break;

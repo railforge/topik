@@ -1,8 +1,8 @@
-use topik_core::protocol::Protocol;
+use topik_core::syntax::TopicSyntax;
 
 pub struct Mqtt;
 
-impl Protocol for Mqtt {
+impl TopicSyntax for Mqtt {
     const SEPARATOR: char = '/';
     const SINGLE_WILDCARD: &'static str = "+";
     const MULTI_WILDCARD: &'static str = "#";

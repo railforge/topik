@@ -85,8 +85,8 @@ pub mod segment {
     pub use topik_core::{BoolRepr, BoolSegment, OnOff, OneZero, Segment, TrueFalse, YesNo};
 }
 
-pub mod protocol {
-    pub use topik_core::protocol::Protocol;
+pub mod syntax {
+    pub use topik_core::TopicSyntax;
 }
 
 pub mod transport {

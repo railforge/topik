@@ -1,5 +1,5 @@
 use crate::error::TopikError;
-use crate::protocol::Protocol;
+use crate::syntax::TopicSyntax;
 use bytes::Bytes;
 
 /// A raw message received from the broker.
@@ -34,7 +34,7 @@ pub trait MessageStream: Send {
 /// Implementations wrap a real broker client and translate between topik's generic
 /// message model and the broker's specific API.
 pub trait Transport: Send + Sync {
-    type Protocol: Protocol;
+    type Syntax: TopicSyntax;
     /// The stream type returned by `subscribe`.
     type Stream: MessageStream;
 

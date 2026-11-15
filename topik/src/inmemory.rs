@@ -65,9 +65,8 @@ use std::sync::Arc;
 
 use bytes::Bytes;
 use tokio::sync::broadcast;
-use topik_core::TopikError;
-use topik_core::protocol::Protocol;
 use topik_core::transport::{MessageStream, RawMessage, Transport};
+use topik_core::{TopicSyntax, TopikError};
 
 const CHANNEL_CAPACITY: usize = 1024;
 
@@ -130,12 +129,12 @@ struct InMemoryInner {
 ///
 /// let client = TopikClient::new(InMemoryTransport::<Mqtt>::new());
 /// ```
-pub struct InMemoryTransport<P: Protocol> {
+pub struct InMemoryTransport<S: TopicSyntax> {
     inner: Arc<InMemoryInner>,
-    _protocol: PhantomData<P>,
+    _protocol: PhantomData<S>,
 }
 
-impl<P: Protocol> InMemoryTransport<P> {
+impl<S: TopicSyntax> InMemoryTransport<S> {
     /// Create a new in-memory transport.
     pub fn new() -> Self {
         let (sender, _) = broadcast::channel(CHANNEL_CAPACITY);
@@ -146,13 +145,13 @@ impl<P: Protocol> InMemoryTransport<P> {
     }
 }
 
-impl<P: Protocol> Default for InMemoryTransport<P> {
+impl<S: TopicSyntax> Default for InMemoryTransport<S> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<P: Protocol> Clone for InMemoryTransport<P> {
+impl<S: TopicSyntax> Clone for InMemoryTransport<S> {
     fn clone(&self) -> Self {
         InMemoryTransport {
             inner: Arc::clone(&self.inner),
@@ -191,8 +190,8 @@ impl MessageStream for InMemoryStream {
     }
 }
 
-impl<P: Protocol + Send + Sync> Transport for InMemoryTransport<P> {
-    type Protocol = P;
+impl<S: TopicSyntax + Send + Sync> Transport for InMemoryTransport<S> {
+    type Syntax = S;
     type Stream = InMemoryStream;
 
     async fn publish(&self, topic: String, payload: Bytes) -> Result<(), TopikError> {
@@ -206,9 +205,9 @@ impl<P: Protocol + Send + Sync> Transport for InMemoryTransport<P> {
         Ok(InMemoryStream {
             receiver,
             pattern,
-            sep: P::SEPARATOR,
-            single: P::SINGLE_WILDCARD,
-            multi: P::MULTI_WILDCARD,
+            sep: S::SEPARATOR,
+            single: S::SINGLE_WILDCARD,
+            multi: S::MULTI_WILDCARD,
         })
     }
 

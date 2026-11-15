@@ -14,9 +14,9 @@
 //! - [`Transport`] trait for broker transport implementations
 mod encoding;
 mod error;
-pub mod protocol;
 mod segments;
 mod subscribe;
+pub mod syntax;
 mod topic;
 pub mod transport;
 
@@ -25,9 +25,9 @@ pub use encoding::{
     StringEncoding, U8Encoding, U16Encoding, U32Encoding, U64Encoding,
 };
 pub use error::TopikError;
-pub use protocol::Protocol;
 pub use segments::{BoolRepr, BoolSegment, OnOff, OneZero, Segment, TrueFalse, YesNo};
 pub use subscribe::SubscribeBuilder;
+pub use syntax::TopicSyntax;
 pub use topic::{Topic, TopicEnum};
 
 #[doc(hidden)]

@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use crate::encoding::Encoding;
 use crate::error::TopikError;
-use crate::protocol::Protocol;
 use crate::subscribe::SubscribeBuilder;
+use crate::syntax::TopicSyntax;
 use bytes::Bytes;
 
 pub mod private {
@@ -34,11 +34,11 @@ pub trait TopicWire: Topic + private::Sealed {
     type Key;
     type SubscribeBuilder: SubscribeBuilder + Send + 'static;
 
-    fn render<P: Protocol>(&self) -> String;
+    fn render<S: TopicSyntax>(&self) -> String;
 
-    fn parse<P: Protocol>(topic: &str) -> Result<Self::Key, TopikError>;
+    fn parse<S: TopicSyntax>(topic: &str) -> Result<Self::Key, TopikError>;
 
-    fn wildcard_pattern<P: Protocol>() -> String;
+    fn wildcard_pattern<S: TopicSyntax>() -> String;
 
     /// Reconstruct the full topic struct from a parsed key and decoded payload.
     ///
@@ -60,7 +60,7 @@ pub trait TopicWire: Topic + private::Sealed {
         Self::Encoding::decode(bytes)
     }
 
-    fn display<P: Protocol>(&self) -> TopicDisplay<'_, Self, P>
+    fn display<S: TopicSyntax>(&self) -> TopicDisplay<'_, Self, S>
     where
         Self: Sized,
     {
@@ -71,22 +71,22 @@ pub trait TopicWire: Topic + private::Sealed {
     }
 }
 
-pub struct TopicDisplay<'a, M: TopicWire, P: Protocol> {
+pub struct TopicDisplay<'a, M: TopicWire, S: TopicSyntax> {
     topic: &'a M,
-    protocol: PhantomData<P>,
+    protocol: PhantomData<S>,
 }
 
-impl<'a, M: TopicWire, P: Protocol> std::fmt::Display for TopicDisplay<'a, M, P> {
+impl<'a, M: TopicWire, S: TopicSyntax> std::fmt::Display for TopicDisplay<'a, M, S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.topic.render::<P>())
+        write!(f, "{}", self.topic.render::<S>())
     }
 }
 
 /// Trait for enums that group multiple topic types for unified subscription.
 pub trait TopicEnum: Sized + Send + 'static {
     /// Returns all wildcard subscription patterns this enum covers.
-    fn patterns<P: Protocol>() -> Vec<String>;
+    fn patterns<S: TopicSyntax>() -> Vec<String>;
 
     /// Parse a raw topic string and payload bytes into a typed enum variant.
-    fn try_from_raw<P: Protocol>(topic: &str, payload: &[u8]) -> Result<Self, TopikError>;
+    fn try_from_raw<S: TopicSyntax>(topic: &str, payload: &[u8]) -> Result<Self, TopikError>;
 }

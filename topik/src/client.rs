@@ -48,7 +48,7 @@ impl<T: Transport> TopikClient<T> {
     /// // NATS -> "sensors.*.temperature"
     /// ```
     pub fn pattern<M: TopicWire>(&self) -> String {
-        M::wildcard_pattern::<T::Protocol>()
+        M::wildcard_pattern::<T::Syntax>()
     }
 
     /// Returns all subscription patterns this enum covers, using this client's protocol.
@@ -61,7 +61,7 @@ impl<T: Transport> TopikClient<T> {
     /// }
     /// ```
     pub fn patterns<E: TopicEnum>(&self) -> Vec<String> {
-        E::patterns::<T::Protocol>()
+        E::patterns::<T::Syntax>()
     }
 
     /// Publish a typed topic message.
@@ -70,7 +70,7 @@ impl<T: Transport> TopikClient<T> {
     /// encodes the payload using the topic's declared encoding.
     /// Wrong type or wrong topic structure is a compile error.
     pub async fn publish<M: TopicWire>(&self, topic: M) -> Result<(), TopikError> {
-        let topic_str = topic.render::<T::Protocol>();
+        let topic_str = topic.render::<T::Syntax>();
         let payload = M::Encoding::encode(topic.payload())?;
         self.transport.publish(topic_str, payload).await
     }
@@ -122,7 +122,7 @@ impl<T: Transport> TopikClient<T> {
         T: Clone + 'static,
         T::Stream: Send + 'static,
     {
-        let patterns = E::patterns::<T::Protocol>();
+        let patterns = E::patterns::<T::Syntax>();
 
         let mut streams = Vec::new();
         for pattern in patterns {
@@ -145,7 +145,7 @@ impl<T: Transport> TopikClient<T> {
     /// // NATS -> "sensors.42.temperature"
     /// ```
     pub fn display<M: TopicWire>(&self, topic: &M) -> String {
-        topic.render::<T::Protocol>()
+        topic.render::<T::Syntax>()
     }
 }
 
@@ -206,7 +206,7 @@ impl<'a, T: Transport + Clone, M: TopicWire> IntoFuture for TopikSubscribeBuilde
 
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
-            let pattern = self.inner.build_pattern::<T::Protocol>();
+            let pattern = self.inner.build_pattern::<T::Syntax>();
             let stream = self.client.transport.subscribe(pattern.clone()).await?;
 
             Ok(Subscriber {

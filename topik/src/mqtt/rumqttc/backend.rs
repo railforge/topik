@@ -6,9 +6,8 @@ use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
 use std::time::Duration;
 use tokio::sync::mpsc;
 use topik_core::__private::Transport;
-use topik_core::Protocol;
-use topik_core::TopikError;
 use topik_core::transport::{MessageStream, RawMessage};
+use topik_core::{TopicSyntax, TopikError};
 
 use crate::inmemory::matches_pattern;
 
@@ -52,7 +51,7 @@ impl MqttTransport {
 }
 
 impl Transport for MqttTransport {
-    type Protocol = Mqtt;
+    type Syntax = Mqtt;
     type Stream = MqttStream;
 
     async fn publish(&self, topic: String, payload: Bytes) -> Result<(), TopikError> {

@@ -126,7 +126,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
         }
 
         impl ::topik::__private::SubscribeBuilder for #builder_name {
-            fn build_pattern<P: ::topik::protocol::Protocol>(&self) -> String {
+            fn build_pattern<P: ::topik::syntax::TopicSyntax>(&self) -> String {
                 [
                     #(#builder_pattern_segments,)*
                 ]
@@ -146,7 +146,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
             type Key = #key_name;
             type SubscribeBuilder = #builder_name;
 
-            fn render<P: ::topik::protocol::Protocol>(&self) -> String {
+            fn render<P: ::topik::syntax::TopicSyntax>(&self) -> String {
                 [
                     #(#render_segments,)*
                 ]
@@ -156,7 +156,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 .join(&P::SEPARATOR.to_string())
             }
 
-            fn parse<P: ::topik::protocol::Protocol>(
+            fn parse<P: ::topik::syntax::TopicSyntax>(
                 topic: &str
             ) -> Result<Self::Key, ::topik::TopikError> {
                 let parts: Vec<&str> = topic.split(P::SEPARATOR).collect();
@@ -166,7 +166,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 })
             }
 
-            fn wildcard_pattern<P: ::topik::protocol::Protocol>() -> String {
+            fn wildcard_pattern<P: ::topik::syntax::TopicSyntax>() -> String {
                 ::topik::__private::SubscribeBuilder::build_pattern::<P>(
                     &<Self as ::topik::__private::TopicWire>::subscribe_builder(),
                 )
@@ -223,13 +223,13 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
 
     quote! {
         impl ::topik::__private::TopicEnum for #name {
-            fn patterns<P: ::topik::protocol::Protocol>() -> Vec<String> {
+            fn patterns<P: ::topik::syntax::TopicSyntax>() -> Vec<String> {
                 vec![
                     #(#pattern_arms,)*
                 ]
             }
 
-            fn try_from_raw<P: ::topik::protocol::Protocol>(
+            fn try_from_raw<P: ::topik::syntax::TopicSyntax>(
                 topic: &str,
                 payload: &[u8],
             ) -> Result<Self, ::topik::TopikError> {
