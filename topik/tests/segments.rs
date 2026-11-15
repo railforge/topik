@@ -3,6 +3,7 @@
 use bytes::Bytes;
 
 use topik::Topic;
+use topik::protocol::Mqtt;
 use topik::segment::{BoolSegment, OnOff, OneZero, TrueFalse, YesNo};
 use topik_core::__private::TopicWire;
 
@@ -51,7 +52,7 @@ fn bool_onezero_renders_true() {
         state: BoolSegment::from(true),
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "device/1/active/1");
+    assert_eq!(topic.render::<Mqtt>(), "device/1/active/1");
 }
 
 #[test]
@@ -61,24 +62,24 @@ fn bool_onezero_renders_false() {
         state: BoolSegment::from(false),
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "device/1/active/0");
+    assert_eq!(topic.render::<Mqtt>(), "device/1/active/0");
 }
 
 #[test]
 fn bool_onezero_parses_true() {
-    let key = DeviceState::parse("device/1/active/1", '/').unwrap();
+    let key = DeviceState::parse::<Mqtt>("device/1/active/1").unwrap();
     assert!(key.state.as_bool());
 }
 
 #[test]
 fn bool_onezero_parses_false() {
-    let key = DeviceState::parse("device/1/active/0", '/').unwrap();
+    let key = DeviceState::parse::<Mqtt>("device/1/active/0").unwrap();
     assert!(!key.state.as_bool());
 }
 
 #[test]
 fn bool_onezero_parse_invalid() {
-    let err = DeviceState::parse("device/1/active/yes", '/').unwrap_err();
+    let err = DeviceState::parse::<Mqtt>("device/1/active/yes").unwrap_err();
     assert!(matches!(err, topik_core::TopikError::ParseError { .. }));
 }
 
@@ -91,18 +92,18 @@ fn bool_truefalse_renders_true() {
         state: BoolSegment::from(true),
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "home/living/light/true");
+    assert_eq!(topic.render::<Mqtt>(), "home/living/light/true");
 }
 
 #[test]
 fn bool_truefalse_parses_true() {
-    let key = LightState::parse("home/living/light/true", '/').unwrap();
+    let key = LightState::parse::<Mqtt>("home/living/light/true").unwrap();
     assert!(key.state.as_bool());
 }
 
 #[test]
 fn bool_truefalse_parses_false() {
-    let key = LightState::parse("home/living/light/false", '/').unwrap();
+    let key = LightState::parse::<Mqtt>("home/living/light/false").unwrap();
     assert!(!key.state.as_bool());
 }
 
@@ -115,18 +116,18 @@ fn bool_yesno_renders_true() {
         state: BoolSegment::from(true),
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "switch/5/yes");
+    assert_eq!(topic.render::<Mqtt>(), "switch/5/yes");
 }
 
 #[test]
 fn bool_yesno_parses_true() {
-    let key = SwitchState::parse("switch/5/yes", '/').unwrap();
+    let key = SwitchState::parse::<Mqtt>("switch/5/yes").unwrap();
     assert!(key.state.as_bool());
 }
 
 #[test]
 fn bool_yesno_parse_invalid() {
-    let err = SwitchState::parse("switch/5/1", '/').unwrap_err();
+    let err = SwitchState::parse::<Mqtt>("switch/5/1").unwrap_err();
     assert!(matches!(err, topik_core::TopikError::ParseError { .. }));
 }
 
@@ -139,12 +140,12 @@ fn bool_onoff_renders_true() {
         state: BoolSegment::from(true),
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "relay/3/on");
+    assert_eq!(topic.render::<Mqtt>(), "relay/3/on");
 }
 
 #[test]
 fn bool_onoff_parses_false() {
-    let key = RelayState::parse("relay/3/off", '/').unwrap();
+    let key = RelayState::parse::<Mqtt>("relay/3/off").unwrap();
     assert!(!key.state.as_bool());
 }
 
@@ -157,12 +158,12 @@ fn string_segment_renders() {
         state: BoolSegment::from(false),
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "home/kitchen/light/false");
+    assert_eq!(topic.render::<Mqtt>(), "home/kitchen/light/false");
 }
 
 #[test]
 fn string_segment_parses() {
-    let key = LightState::parse("home/kitchen/light/true", '/').unwrap();
+    let key = LightState::parse::<Mqtt>("home/kitchen/light/true").unwrap();
     assert_eq!(key.room, "kitchen");
 }
 
@@ -173,8 +174,8 @@ fn string_segment_round_trip() {
         state: BoolSegment::from(true),
         data: Bytes::new(),
     };
-    let rendered = topic.render('/');
-    let key = LightState::parse(&rendered, '/').unwrap();
+    let rendered = topic.render::<Mqtt>();
+    let key = LightState::parse::<Mqtt>(&rendered).unwrap();
     assert_eq!(key.room, "bedroom");
     assert!(key.state.as_bool());
 }

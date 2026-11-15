@@ -6,6 +6,7 @@ use topik::encoding::{
     BoolEncoding, I32Encoding, I64Encoding, RawEncoding, StringEncoding, U8Encoding, U16Encoding,
     U32Encoding, U64Encoding,
 };
+use topik::protocol::Mqtt;
 use topik::segment::OneZero;
 use topik_core::__private::TopicWire;
 use topik_core::Encoding;
@@ -72,7 +73,7 @@ fn string_encoding_decode_invalid_utf8() {
 
 #[test]
 fn string_encoding_from_key_and_payload() {
-    let key = StringSensor::parse("sensor/42", '/').unwrap();
+    let key = StringSensor::parse::<Mqtt>("sensor/42").unwrap();
     let msg = StringSensor::from_key_and_payload(key, "hello world".to_string());
     assert_eq!(msg.device_id, 42);
     assert_eq!(msg.data, "hello world");
@@ -96,7 +97,7 @@ fn raw_encoding_decode() {
 
 #[test]
 fn raw_encoding_from_key_and_payload() {
-    let key = RawSensor::parse("sensor/42", '/').unwrap();
+    let key = RawSensor::parse::<Mqtt>("sensor/42").unwrap();
     let payload = Bytes::from("raw payload");
     let msg = RawSensor::from_key_and_payload(key, payload.clone());
     assert_eq!(msg.device_id, 42);
@@ -125,7 +126,7 @@ fn u64_encoding_decode_invalid() {
 
 #[test]
 fn u64_encoding_from_key_and_payload() {
-    let key = CounterReading::parse("counter/1", '/').unwrap();
+    let key = CounterReading::parse::<Mqtt>("counter/1").unwrap();
     let msg = CounterReading::from_key_and_payload(key, 999u64);
     assert_eq!(msg.device_id, 1);
     assert_eq!(msg.data, 999u64);
@@ -229,7 +230,7 @@ fn bool_encoding_onezero_decode_invalid() {
 
 #[test]
 fn bool_encoding_from_key_and_payload() {
-    let key = DeviceActive::parse("device/42/active", '/').unwrap();
+    let key = DeviceActive::parse::<Mqtt>("device/42/active").unwrap();
     let msg = DeviceActive::from_key_and_payload(key, true);
     assert_eq!(msg.device_id, 42);
     assert!(msg.data);

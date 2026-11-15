@@ -252,7 +252,7 @@ mod client {
     use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
     use std::time::Duration;
     use topik_core::__private::{TopicEnum, TopicWire};
-    use topik_core::protocol::{Mqtt, Protocol};
+    use topik_core::protocol::Mqtt;
     use topik_core::{Encoding, TopikError};
 
     /// Builder for [`MqttClient`].
@@ -484,7 +484,7 @@ mod client {
         /// // -> "sensors/+/temperature"
         /// ```
         pub fn pattern<M: TopicWire>(&self) -> String {
-            M::wildcard_pattern_for::<Mqtt>()
+            M::wildcard_pattern::<Mqtt>()
         }
 
         /// Returns all MQTT subscription patterns this enum covers.
@@ -497,7 +497,7 @@ mod client {
         /// }
         /// ```
         pub fn patterns<E: TopicEnum>(&self) -> Vec<String> {
-            E::patterns_for::<Mqtt>()
+            E::patterns::<Mqtt>()
         }
 
         /// Subscribe to all messages matching this topic type.
@@ -505,8 +505,7 @@ mod client {
         /// Sends a SUBSCRIBE packet with the correct wildcard pattern.
         /// Default QoS is AtLeastOnce.
         pub async fn subscribe<M: TopicWire>(&self) -> Result<(), TopikError> {
-            let pattern =
-                M::wildcard_pattern(Mqtt::SEPARATOR, Mqtt::SINGLE_WILDCARD, Mqtt::MULTI_WILDCARD);
+            let pattern = M::wildcard_pattern::<Mqtt>();
             self.inner
                 .subscribe(pattern, QoS::AtLeastOnce)
                 .await
@@ -517,7 +516,7 @@ mod client {
         ///
         /// Sends SUBSCRIBE packets for all patterns in the enum.
         pub async fn subscribe_many<E: TopicEnum>(&self) -> Result<(), TopikError> {
-            let patterns = E::patterns_for::<Mqtt>();
+            let patterns = E::patterns::<Mqtt>();
             for pattern in patterns {
                 self.inner
                     .subscribe(pattern, QoS::AtLeastOnce)
@@ -568,7 +567,7 @@ mod client {
         /// }
         /// ```
         pub fn parse<E: TopicEnum>(&self, topic: &str, payload: &[u8]) -> Result<E, TopikError> {
-            E::try_from_raw(topic, payload, Mqtt::SEPARATOR)
+            E::try_from_raw::<Mqtt>(topic, payload)
         }
 
         /// Parse an incoming publish packet into a single typed topic.
@@ -579,7 +578,7 @@ mod client {
             topic: &str,
             payload: &[u8],
         ) -> Result<Option<M>, TopikError> {
-            match M::parse(topic, Mqtt::SEPARATOR) {
+            match M::parse::<Mqtt>(topic) {
                 Ok(key) => {
                     let data = M::Encoding::decode(Bytes::copy_from_slice(payload))?;
                     Ok(Some(M::from_key_and_payload(key, data)))
@@ -590,8 +589,7 @@ mod client {
 
         /// Unsubscribe from a topic pattern.
         pub async fn unsubscribe<M: TopicWire>(&self) -> Result<(), TopikError> {
-            let pattern =
-                M::wildcard_pattern(Mqtt::SEPARATOR, Mqtt::SINGLE_WILDCARD, Mqtt::MULTI_WILDCARD);
+            let pattern = M::wildcard_pattern::<Mqtt>();
             self.inner
                 .unsubscribe(pattern)
                 .await
@@ -608,7 +606,7 @@ mod client {
         /// // -> "sensors/42/temperature"
         /// ```
         pub fn display<M: TopicWire>(&self, topic: &M) -> String {
-            topic.render(Mqtt::SEPARATOR)
+            topic.render::<Mqtt>()
         }
     }
 
@@ -643,7 +641,7 @@ mod client {
 
         fn into_future(self) -> Self::IntoFuture {
             Box::pin(async move {
-                let topic_str = self.topic.render(Mqtt::SEPARATOR);
+                let topic_str = self.topic.render::<Mqtt>();
                 let payload = M::Encoding::encode(self.topic.payload())?;
                 self.client
                     .publish(topic_str, self.qos, self.retain, payload.to_vec())

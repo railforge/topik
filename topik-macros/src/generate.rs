@@ -153,13 +153,13 @@ pub fn generate(input: TopicInput) -> TokenStream {
                 .iter()
                 .map(|s| s.as_ref())
                 .collect::<Vec<&str>>()
-                .join(&P::SEPERATOR.to_string())
+                .join(&P::SEPARATOR.to_string())
             }
 
             fn parse<P: ::topik::protocol::Protocol>(
                 topic: &str
             ) -> Result<Self::Key, ::topik::TopikError> {
-                let parts: Vec<&str> = topic.split(P::SEPERATOR).collect();
+                let parts: Vec<&str> = topic.split(P::SEPARATOR).collect();
                 #(#parse_stmts)*
                 Ok(#key_name {
                     #(#key_field_names,)*

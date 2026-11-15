@@ -2,6 +2,7 @@
 
 use bytes::Bytes;
 use topik::Topic;
+use topik::protocol::{Mqtt, Nats};
 use topik_core::__private::TopicWire;
 
 // multiple literals, multiple dynamic segments, literal in the middle
@@ -32,8 +33,6 @@ struct CpuMetric {
     data: Bytes,
 }
 
-// --- FactoryReading tests ---
-
 #[test]
 fn render_literal_in_middle_mqtt() {
     let topic = FactoryReading {
@@ -41,7 +40,7 @@ fn render_literal_in_middle_mqtt() {
         kind: "temperature".to_string(),
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "factory/v2/99/readings/temperature");
+    assert_eq!(topic.render::<Mqtt>(), "factory/v2/99/readings/temperature");
 }
 
 #[test]
@@ -51,19 +50,19 @@ fn render_literal_in_middle_nats() {
         kind: "humidity".to_string(),
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('.'), "factory.v2.99.readings.humidity");
+    assert_eq!(topic.render::<Nats>(), "factory.v2.99.readings.humidity");
 }
 
 #[test]
 fn parse_literal_in_middle() {
-    let key = FactoryReading::parse("factory/v2/99/readings/temperature", '/').unwrap();
+    let key = FactoryReading::parse::<Mqtt>("factory/v2/99/readings/temperature").unwrap();
     assert_eq!(key.device_id, 99);
     assert_eq!(key.kind, "temperature");
 }
 
 #[test]
 fn parse_literal_mismatch_first() {
-    let err = FactoryReading::parse("wrong/v2/99/readings/temperature", '/').unwrap_err();
+    let err = FactoryReading::parse::<Mqtt>("wrong/v2/99/readings/temperature").unwrap_err();
     assert!(matches!(
         err,
         topik_core::TopikError::LiteralMismatch { position: 0, .. }
@@ -72,7 +71,7 @@ fn parse_literal_mismatch_first() {
 
 #[test]
 fn parse_literal_mismatch_middle() {
-    let err = FactoryReading::parse("factory/v2/99/wrong/temperature", '/').unwrap_err();
+    let err = FactoryReading::parse::<Mqtt>("factory/v2/99/wrong/temperature").unwrap_err();
     assert!(matches!(
         err,
         topik_core::TopikError::LiteralMismatch { position: 3, .. }
@@ -81,7 +80,7 @@ fn parse_literal_mismatch_middle() {
 
 #[test]
 fn parse_literal_mismatch_second() {
-    let err = FactoryReading::parse("factory/v1/99/readings/temperature", '/').unwrap_err();
+    let err = FactoryReading::parse::<Mqtt>("factory/v1/99/readings/temperature").unwrap_err();
     assert!(matches!(
         err,
         topik_core::TopikError::LiteralMismatch { position: 1, .. }
@@ -90,7 +89,7 @@ fn parse_literal_mismatch_second() {
 
 #[test]
 fn parse_missing_dynamic_segment() {
-    let err = FactoryReading::parse("factory/v2/99/readings", '/').unwrap_err();
+    let err = FactoryReading::parse::<Mqtt>("factory/v2/99/readings").unwrap_err();
     assert!(matches!(
         err,
         topik_core::TopikError::MissingSegment { position: 4, .. }
@@ -100,7 +99,7 @@ fn parse_missing_dynamic_segment() {
 #[test]
 fn wildcard_pattern_skips_literals() {
     assert_eq!(
-        FactoryReading::wildcard_pattern('/', "+", "#"),
+        FactoryReading::wildcard_pattern::<Mqtt>(),
         "factory/v2/+/readings/+"
     );
 }
@@ -112,13 +111,11 @@ fn round_trip_multiple_segments() {
         kind: "pressure".to_string(),
         data: Bytes::new(),
     };
-    let rendered = topic.render('/');
-    let key = FactoryReading::parse(&rendered, '/').unwrap();
+    let rendered = topic.render::<Mqtt>();
+    let key = FactoryReading::parse::<Mqtt>(&rendered).unwrap();
     assert_eq!(key.device_id, 7);
     assert_eq!(key.kind, "pressure");
 }
-
-// --- DeepNestedSensor tests ---
 
 #[test]
 fn render_deep_nesting() {
@@ -126,24 +123,22 @@ fn render_deep_nesting() {
         device_id: 42,
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "eu/west/factory/sensors/42");
+    assert_eq!(topic.render::<Mqtt>(), "eu/west/factory/sensors/42");
 }
 
 #[test]
 fn parse_deep_nesting() {
-    let key = DeepNestedSensor::parse("eu/west/factory/sensors/42", '/').unwrap();
+    let key = DeepNestedSensor::parse::<Mqtt>("eu/west/factory/sensors/42").unwrap();
     assert_eq!(key.device_id, 42);
 }
 
 #[test]
 fn wildcard_deep_nesting() {
     assert_eq!(
-        DeepNestedSensor::wildcard_pattern('/', "+", "#"),
+        DeepNestedSensor::wildcard_pattern::<Mqtt>(),
         "eu/west/factory/sensors/+"
     );
 }
-
-// --- CpuMetric tests ---
 
 #[test]
 fn render_dynamic_segment_first() {
@@ -151,18 +146,18 @@ fn render_dynamic_segment_first() {
         device_id: 10,
         data: Bytes::new(),
     };
-    assert_eq!(topic.render('/'), "10/metrics/cpu");
+    assert_eq!(topic.render::<Mqtt>(), "10/metrics/cpu");
 }
 
 #[test]
 fn parse_dynamic_segment_first() {
-    let key = CpuMetric::parse("10/metrics/cpu", '/').unwrap();
+    let key = CpuMetric::parse::<Mqtt>("10/metrics/cpu").unwrap();
     assert_eq!(key.device_id, 10);
 }
 
 #[test]
 fn parse_literal_mismatch_after_dynamic() {
-    let err = CpuMetric::parse("10/wrong/cpu", '/').unwrap_err();
+    let err = CpuMetric::parse::<Mqtt>("10/wrong/cpu").unwrap_err();
     assert!(matches!(
         err,
         topik_core::TopikError::LiteralMismatch { position: 1, .. }

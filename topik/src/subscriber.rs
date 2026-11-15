@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 use tokio::sync::mpsc;
 use topik_core::__private::{MessageStream, TopicEnum, TopicWire, Transport};
-use topik_core::protocol::Protocol;
 use topik_core::{Encoding, TopikError};
 
 /// A typed subscriber for a topik type.
@@ -38,7 +37,7 @@ impl<T: Transport + Clone, M: TopicWire> Subscriber<T, M> {
         loop {
             let raw = self.stream.next().await?;
 
-            let key = match M::parse(&raw.topic, T::Protocol::SEPARATOR) {
+            let key = match M::parse::<T::Protocol>(&raw.topic) {
                 Ok(key) => key,
                 Err(_) => continue,
             };
@@ -97,7 +96,7 @@ pub struct EnumSubscriber<E: TopicEnum> {
 }
 
 impl<E: TopicEnum> EnumSubscriber<E> {
-    pub(crate) fn new<T: Transport + Clone + 'static>(streams: Vec<T::Stream>, sep: char) -> Self
+    pub(crate) fn new<T: Transport + Clone + 'static>(streams: Vec<T::Stream>) -> Self
     where
         T::Stream: Send + 'static,
     {
@@ -107,7 +106,7 @@ impl<E: TopicEnum> EnumSubscriber<E> {
             let tx = tx.clone();
             tokio::spawn(async move {
                 while let Some(raw) = stream.next().await {
-                    if let Ok(event) = E::try_from_raw(&raw.topic, &raw.payload, sep)
+                    if let Ok(event) = E::try_from_raw::<T::Protocol>(&raw.topic, &raw.payload)
                         && tx.send(event).await.is_err()
                     {
                         break;

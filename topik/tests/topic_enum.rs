@@ -40,7 +40,7 @@ enum SensorTopics {
 
 #[test]
 fn patterns_mqtt() {
-    let patterns = SensorTopics::patterns('/', "+", "#");
+    let patterns = SensorTopics::patterns::<Mqtt>();
     assert_eq!(patterns.len(), 3);
     assert_eq!(patterns[0], "sensors/+/temperature");
     assert_eq!(patterns[1], "sensors/+/humidity");
@@ -49,7 +49,7 @@ fn patterns_mqtt() {
 
 #[test]
 fn patterns_nats() {
-    let patterns = SensorTopics::patterns('.', "*", ">");
+    let patterns = SensorTopics::patterns::<Nats>();
     assert_eq!(patterns[0], "sensors.*.temperature");
     assert_eq!(patterns[1], "sensors.*.humidity");
     assert_eq!(patterns[2], "devices.*.reboot");
@@ -60,26 +60,26 @@ fn patterns_nats() {
 #[test]
 fn try_from_raw_temperature() {
     let payload = 23.5f32.to_string();
-    let result = SensorTopics::try_from_raw("sensors/42/temperature", payload.as_bytes(), '/');
+    let result = SensorTopics::try_from_raw::<Mqtt>("sensors/42/temperature", payload.as_bytes());
     assert!(matches!(result, Ok(SensorTopics::Temperature(msg)) if msg.device_id == 42));
 }
 
 #[test]
 fn try_from_raw_humidity() {
     let payload = 65.0f32.to_string();
-    let result = SensorTopics::try_from_raw("sensors/42/humidity", payload.as_bytes(), '/');
+    let result = SensorTopics::try_from_raw::<Mqtt>("sensors/42/humidity", payload.as_bytes());
     assert!(matches!(result, Ok(SensorTopics::Humidity(msg)) if msg.device_id == 42));
 }
 
 #[test]
 fn try_from_raw_reboot() {
-    let result = SensorTopics::try_from_raw("devices/99/reboot", b"", '/');
+    let result = SensorTopics::try_from_raw::<Mqtt>("devices/99/reboot", b"");
     assert!(matches!(result, Ok(SensorTopics::Reboot(msg)) if msg.device_id == 99));
 }
 
 #[test]
 fn try_from_raw_no_match() {
-    let result = SensorTopics::try_from_raw("unknown/42/topic", b"", '/');
+    let result = SensorTopics::try_from_raw::<Mqtt>("unknown/42/topic", b"");
     assert!(matches!(
         result,
         Err(topik_core::TopikError::ParseError { .. })
@@ -89,7 +89,7 @@ fn try_from_raw_no_match() {
 #[test]
 fn try_from_raw_nats_separator() {
     let payload = 23.5f32.to_string();
-    let result = SensorTopics::try_from_raw("sensors.42.temperature", payload.as_bytes(), '.');
+    let result = SensorTopics::try_from_raw::<Nats>("sensors.42.temperature", payload.as_bytes());
     assert!(matches!(result, Ok(SensorTopics::Temperature(msg)) if msg.device_id == 42));
 }
 
