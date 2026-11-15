@@ -96,7 +96,7 @@ pub fn generate(input: TopicInput) -> TokenStream {
         SegmentKind::Dynamic(ident) => quote! {
             match &self.#ident {
                 Some(v) => ::topik::segment::Segment::render(v).into_owned(),
-                None => single.to_string(),
+                None => P::SINGLE_WILDCARD.to_string(),
             }
         },
     });
@@ -126,11 +126,11 @@ pub fn generate(input: TopicInput) -> TokenStream {
         }
 
         impl ::topik::__private::SubscribeBuilder for #builder_name {
-            fn build_pattern(&self, sep: char, single: &'static str) -> String {
+            fn build_pattern<P: ::topik::protocol::Protocol>(&self) -> String {
                 [
                     #(#builder_pattern_segments,)*
                 ]
-                .join(&sep.to_string())
+                .join(&P::SEPARATOR.to_string())
             }
         }
 
@@ -146,25 +146,30 @@ pub fn generate(input: TopicInput) -> TokenStream {
             type Key = #key_name;
             type SubscribeBuilder = #builder_name;
 
-            fn render(&self, sep: char) -> String {
+            fn render<P: ::topik::protocol::Protocol>(&self) -> String {
                 [
                     #(#render_segments,)*
                 ]
                 .iter()
                 .map(|s| s.as_ref())
                 .collect::<Vec<&str>>()
-                .join(&sep.to_string())
+                .join(&P::SEPERATOR.to_string())
             }
 
-            fn parse(
-                topic: &str,
-                sep: char,
+            fn parse<P: ::topik::protocol::Protocol>(
+                topic: &str
             ) -> Result<Self::Key, ::topik::TopikError> {
-                let parts: Vec<&str> = topic.split(sep).collect();
+                let parts: Vec<&str> = topic.split(P::SEPERATOR).collect();
                 #(#parse_stmts)*
                 Ok(#key_name {
                     #(#key_field_names,)*
                 })
+            }
+
+            fn wildcard_pattern<P: ::topik::protocol::Protocol>() -> String {
+                ::topik::__private::SubscribeBuilder::build_pattern::<P>(
+                    &<Self as ::topik::__private::TopicWire>::subscribe_builder(),
+                )
             }
 
             fn from_key_and_payload(
@@ -175,18 +180,6 @@ pub fn generate(input: TopicInput) -> TokenStream {
                     #(#from_key_fields,)*
                     #payload_name,
                 }
-            }
-
-            fn wildcard_pattern(
-                sep: char,
-                single: &'static str,
-                _multi: &'static str,
-            ) -> String {
-                ::topik::__private::SubscribeBuilder::build_pattern(
-                    &<Self as ::topik::__private::TopicWire>::subscribe_builder(),
-                    sep,
-                    single,
-                )
             }
 
             fn payload(&self) -> &Self::Payload {
@@ -208,7 +201,7 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
     let pattern_arms = input.variants.iter().map(|v| {
         let ty = &v.topic_ty;
         quote! {
-            <#ty as ::topik::__private::TopicWire>::wildcard_pattern(sep, single, multi)
+            <#ty as ::topik::__private::TopicWire>::wildcard_pattern::<P>()
         }
     });
 
@@ -216,7 +209,7 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
         let variant_name = &v.name;
         let ty = &v.topic_ty;
         quote! {
-            if let Ok(key) = <#ty as ::topik::__private::TopicWire>::parse(topic, sep) {
+            if let Ok(key) = <#ty as ::topik::__private::TopicWire>::parse::<P>(topic) {
                 if let Ok(payload) = <#ty as ::topik::__private::TopicWire>::decode_payload(
                     ::topik::__private::Bytes::copy_from_slice(payload)
                 ) {
@@ -230,16 +223,15 @@ pub fn generate_topic_enum(input: TopicEnumInput) -> TokenStream {
 
     quote! {
         impl ::topik::__private::TopicEnum for #name {
-            fn patterns(sep: char, single: &'static str, multi: &'static str) -> Vec<String> {
+            fn patterns<P: ::topik::protocol::Protocol>() -> Vec<String> {
                 vec![
                     #(#pattern_arms,)*
                 ]
             }
 
-            fn try_from_raw(
+            fn try_from_raw<P: ::topik::protocol::Protocol>(
                 topic: &str,
                 payload: &[u8],
-                sep: char,
             ) -> Result<Self, ::topik::TopikError> {
                 #(#try_parse_arms)*
 
